@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include "Player.hpp"
 #include "Enemy.hpp"
+#include "EnemyPatroller.hpp"
 #include "Grid.hpp"
 #include <vector>
 
@@ -13,7 +14,7 @@ int main() {
     window.setFramerateLimit(60);
 
     Player player(200, 400);
-    std::vector<Enemy> enemies = { Enemy(100, 100), Enemy(700, 100) };
+    std::vector<EnemyPatroller> enemies = { EnemyPatroller(100, 100), EnemyPatroller(700, 100) };
     Grid grid;
     grid.loadFromFile("map.txt");
 
@@ -31,14 +32,17 @@ int main() {
 
         player.update(deltaTime, grid);
         for (auto& enemy : enemies) {
-            enemy.update(deltaTime, grid);
+            enemy.update(deltaTime, grid, player);
         }
 
         window.clear();
         grid.draw(window);
         window.draw(player.shape);
-        for (const auto& enemy : enemies)
+        for (auto& enemy : enemies) 
+        {
             window.draw(enemy.shape);
+            enemy.drawViewCone(window, grid);
+        }
         window.display();
     }
     return 0;
