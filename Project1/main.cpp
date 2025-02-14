@@ -4,6 +4,8 @@
 #include "Grid.hpp"
 #include <vector>
 
+using namespace sf;
+using namespace std;
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
@@ -28,7 +30,9 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-
+        if (Keyboard::Escape) {
+            window.close();
+        }
         player.update(deltaTime, grid);
         for (auto& enemy : enemies) {
             enemy.update(deltaTime, grid);
