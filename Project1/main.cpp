@@ -30,7 +30,7 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-        if (Keyboard::Escape) {
+        if (Keyboard::isKeyPressed(Keyboard::Escape)) {
             window.close();
         }
         player.update(deltaTime, grid);
