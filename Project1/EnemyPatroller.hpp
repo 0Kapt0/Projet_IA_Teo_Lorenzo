@@ -15,6 +15,8 @@ public:
 
 private:
     float enemyAngle = 0.0f;
+    bool isPointInTriangle(sf::Vector2f p, sf::Vector2f a, sf::Vector2f b, sf::Vector2f c);
+    bool isTriangleIntersectingRect(sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::FloatRect rect);
 };
 
 #endif

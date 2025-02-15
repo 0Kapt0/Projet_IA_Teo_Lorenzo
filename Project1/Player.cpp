@@ -3,7 +3,7 @@
 #include <SFML/Window/Keyboard.hpp>
 
 Player::Player(float x, float y) : Entity(x, y, sf::Color::Blue) {
-    shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
+    /*shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);*/
 }
 
 void Player::update(float deltaTime, Grid& grid) {
