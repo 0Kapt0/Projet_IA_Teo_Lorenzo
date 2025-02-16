@@ -55,8 +55,8 @@ void EnemyPatroller::setWarning(bool alert) {
         shape.setFillColor(sf::Color::Blue);
         std::cout << "EnemyPatroller alerted!\n";
     }
-    else {
-        shape.setFillColor(sf::Color::White);
+    if (!alert) {
+        shape.setFillColor(sf::Color::Red);
     }
 }
 

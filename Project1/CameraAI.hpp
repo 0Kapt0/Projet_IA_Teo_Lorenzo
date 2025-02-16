@@ -18,12 +18,13 @@ public:
     void draw(sf::RenderWindow& window, Grid& grid);
     bool isPlayerDetected(Player& player, Grid& grid);
     void alertEnemies();
+    void desalertEnemies();
     sf::VertexArray getViewConeShape(Grid& grid);
     bool isTriangleIntersectingRect(sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::FloatRect rect);
-    bool isPointInTriangle(sf::Vector2f p, sf::Vector2f a, sf::Vector2f b, sf::Vector2f c); // Added function declaration
+    bool isPointInTriangle(sf::Vector2f p, sf::Vector2f a, sf::Vector2f b, sf::Vector2f c);
 
 private:
-    float rotationSpeed = 50.0f; // Degrees per second
+    float rotationSpeed = 50.0f;
     float detectionRange = 300.0f;
     float alertTimer = 0.0f;
     float cooldownTime = 3.0f;

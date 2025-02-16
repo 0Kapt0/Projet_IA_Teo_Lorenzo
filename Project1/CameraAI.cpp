@@ -30,6 +30,10 @@ void CameraAI::update(float deltaTime, Grid& grid, Player& player) {
             playerDetected = true;
             break;
         }
+        else {
+            desalertEnemies();
+        }
+
     }
 }
 
@@ -113,5 +117,13 @@ void CameraAI::alertEnemies() {
     std::cout << "Camera Alert! Enemies notified!\n";
     for (auto& enemy : entityManager->getEnemies()) {
         enemy->setWarning(true);
+    }
+}
+
+void CameraAI::desalertEnemies() {
+    if (!entityManager) return;
+
+    for (auto& enemy : entityManager->getEnemies()) {
+        enemy->setWarning(false);
     }
 }
