@@ -3,51 +3,48 @@
 #include "EnemyPatroller.hpp"
 #include "Enemy.hpp"
 #include "Grid.hpp"
+#include "EntityManager.hpp"
 #include <vector>
 
-using namespace sf;
-using namespace std;
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Jeu SFML - IA Ennemis");
+    RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Jeu SFML - IA Ennemis");
     window.setFramerateLimit(60);
 
-    Player player(200, 400);
-    std::vector<EnemyPatroller> enemies = { EnemyPatroller(100, 100), EnemyPatroller(700, 100) };
     Grid grid;
+
+    EntityManager manager;
+    auto player = make_shared<Player>(200, 400);
+    manager.setPlayer(player);
+    manager.addEnemy(make_shared<EnemyPatroller>(100, 100));
+    manager.addEnemy(make_shared<EnemyPatroller>(700, 100));
     grid.loadFromFile("map.txt");
 
-    sf::Clock clock;
+    Clock clock;
 
     while (window.isOpen()) {
-        sf::Time dt = clock.restart();
+        Time dt = clock.restart();
         float deltaTime = dt.asSeconds();
 
-        sf::Event event;
+        Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+            if (event.type == Event::Closed)
                 window.close();
         }
         if (Keyboard::isKeyPressed(Keyboard::Escape)) {
             window.close();
         }
-        player.update(deltaTime, grid);
-        for (auto& enemy : enemies) {
-            enemy.update(deltaTime, grid, player);
-
-        }
 
         window.clear();
+
+
         grid.draw(window);
-        window.draw(player.shape);
-        for (auto& enemy : enemies) {
-            window.draw(enemy.shape);
-            enemy.drawViewCone(window, grid);
-            
-        }
+        manager.update(deltaTime, grid);
+        manager.draw(window, grid);
+
         window.display();
     }
     return 0;
