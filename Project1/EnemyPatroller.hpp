@@ -14,7 +14,8 @@ using namespace std;
 enum class Goal {
     Patrolling,
     Chasing,
-    LostIt
+    LostIt,
+    Searching
 };
 
 class EnemyPatroller : public Enemy {
@@ -24,6 +25,7 @@ public:
     void update(float deltaTime, Grid& grid, Player& player);
     void drawViewCone(RenderWindow& window, Grid& grid);
     VertexArray getViewConeShape(Grid& grid);
+    void rotateTowards(const Vector2f& direction);
 
     // State helpers
     bool atTargetPosition() const;
@@ -33,15 +35,17 @@ public:
     Vector2f targetpos;
     bool playerDetected = false;
     bool warning = false;
+    float maxRotationSpeed = 90.0f;
     float deltaTime;
 
 private:
     bool atTarget = false;
     bool isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c);
     bool isTriangleIntersectingRect(Vector2f a, Vector2f b, Vector2f c, FloatRect rect);
+
 };
 
-// GOAP Actions
+// ================================================================================Actions================================================================================
 class Action {
 public:
     virtual bool CanExecute(const EnemyPatroller& state) = 0;
@@ -50,12 +54,6 @@ public:
 };
 
 class ChasePlayer : public Action {
-public:
-    bool CanExecute(const EnemyPatroller& state) override;
-    void Execute(EnemyPatroller& state) override;
-};
-
-class MoveToLastKnownPosition : public Action {
 public:
     bool CanExecute(const EnemyPatroller& state) override;
     void Execute(EnemyPatroller& state) override;
