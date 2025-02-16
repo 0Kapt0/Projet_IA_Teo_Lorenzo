@@ -26,8 +26,8 @@ void EntityManager::draw(RenderWindow& window, Grid& grid) {
         window.draw(player->shape);
     }
     for (auto& enemy : enemies) {
-        window.draw(enemy->shape);
         enemy->drawViewCone(window, grid);
+        window.draw(enemy->shape);
     }
 }
 

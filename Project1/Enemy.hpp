@@ -9,5 +9,4 @@ public:
     Enemy(float x, float y);
     void update(float deltaTime, Grid& grid) override;
 };
-
 #endif // ENEMY_HPP

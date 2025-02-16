@@ -5,41 +5,68 @@ using namespace sf;
 using namespace std;
 
 EnemyPatroller::EnemyPatroller(float x, float y) : Enemy(x, y) {
+    targetpos = Vector2f(x, y);
+    reset();
     shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
 }
 
 void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
-    enemyAngle += 1;
+    this->deltaTime = deltaTime;
     shape.setRotation(enemyAngle);
 
     VertexArray cone = getViewConeShape(grid);
     FloatRect playerBounds = player.shape.getGlobalBounds();
 
-    bool playerDetected = false;
-
-    //Check if any triangle in the cone intersects with the player's bounding box
+    playerDetected = false;
     for (size_t i = 1; i < cone.getVertexCount() - 1; ++i) {
         if (isTriangleIntersectingRect(cone[0].position, cone[i].position, cone[i + 1].position, playerBounds)) {
+            warning = true;
             playerDetected = true;
+            targetpos = player.shape.getPosition();
             break;
         }
     }
 
+    GOAPPlanner planner;
+    Goal currentGoal;
     if (playerDetected) {
-        shape.setFillColor(Color::Green);
+        currentGoal = Goal::Chasing;
     }
-    else {
-        shape.setFillColor(Color::Red);
+    else if (!atTarget) {
+        currentGoal = Goal::LostIt;
+    }
+    else{
+        currentGoal = Goal::Patrolling;
+    }
+
+    vector<Action*> actions = planner.Plan(*this, currentGoal);
+
+    for (Action* action : actions) {
+        if (action->CanExecute(*this)) {
+            action->Execute(*this);
+            break;
+        }
     }
 }
 
+bool EnemyPatroller::atTargetPosition() const {
+    return atTarget;
+}
+
+void EnemyPatroller::setAtTargetPosition(bool value) {
+    atTarget = value;
+}
+
+void EnemyPatroller::reset() {
+    atTarget = false;
+    playerDetected = false;
+}
+
 bool EnemyPatroller::isTriangleIntersectingRect(Vector2f a, Vector2f b, Vector2f c, FloatRect rect) {
-    //Check if any of the triangle’s vertices are inside the rectangle
     if (rect.contains(a) || rect.contains(b) || rect.contains(c)) {
         return true;
     }
 
-    //Check if any of the rectangle’s corners are inside the triangle
     Vector2f topLeft(rect.left, rect.top);
     Vector2f topRight(rect.left + rect.width, rect.top);
     Vector2f bottomLeft(rect.left, rect.top + rect.height);
@@ -97,4 +124,73 @@ VertexArray EnemyPatroller::getViewConeShape(Grid& grid) {
 void EnemyPatroller::drawViewCone(RenderWindow& window, Grid& grid) {
     VertexArray cone = getViewConeShape(grid);
     window.draw(cone);
+}
+
+// ===================================================================================Actions=================================================================================
+
+
+bool ChasePlayer::CanExecute(const EnemyPatroller& state) {
+    return state.warning;
+}
+
+void ChasePlayer::Execute(EnemyPatroller& state) {
+    cout << "Chasing player\n";
+    Vector2f direction = state.targetpos - state.shape.getPosition();
+    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
+    if (magnitude > 0.1f) {
+        direction /= magnitude;
+        state.shape.move(direction * state.SPEED * state.deltaTime);
+    }
+}
+
+bool MoveToLastKnownPosition::CanExecute(const EnemyPatroller& state) {
+    return !state.playerDetected && !state.atTargetPosition();
+}
+
+void MoveToLastKnownPosition::Execute(EnemyPatroller& state) {
+    cout << "Moving to last known position\n";
+    Vector2f direction = state.targetpos - state.shape.getPosition();
+    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
+    if (magnitude > 5.0f) {
+        direction /= magnitude;
+        state.shape.move(direction * state.SPEED * state.deltaTime);
+    }
+    else {
+        state.setAtTargetPosition(true);
+    }
+}
+
+bool LookAround::CanExecute(const EnemyPatroller& state) {
+    return state.atTargetPosition() && !state.playerDetected;
+}
+
+void LookAround::Execute(EnemyPatroller& state) {
+    cout << "Looking around\n";
+    state.enemyAngle += 50 * state.deltaTime;
+
+    static float lookAroundTime = 0.0f;
+    lookAroundTime += state.deltaTime;
+    if (lookAroundTime >= 3.0f) {
+        state.reset();
+        lookAroundTime = 0.0f;
+    }
+}
+
+
+vector<Action*> GOAPPlanner::Plan(const EnemyPatroller& initialState, Goal goal) {
+    vector<Action*> plan;
+
+    if (goal == Goal::Chasing) {
+        plan.push_back(new ChasePlayer());
+    }
+    else if (goal == Goal::LostIt) {
+        plan.push_back(new MoveToLastKnownPosition());
+        plan.push_back(new LookAround());
+    }
+    else if (goal == Goal::Patrolling) {
+        cout << "patrolling";
+        // Patrolling actions would go here (e.g., Move)
+    }
+
+    return plan;
 }
