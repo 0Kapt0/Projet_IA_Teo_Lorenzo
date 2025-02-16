@@ -23,14 +23,13 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
             warning = true;
             playerDetected = true;
             targetpos = player.shape.getPosition();
-            cout << "ezvfiuyzeifub";
+            setAtTargetPosition(false);
             break;
         }
     }
-
-    
     GOAPPlanner planner;
     Goal currentGoal;
+
     if (playerDetected) {
         currentGoal = Goal::Chasing;
     }
@@ -140,6 +139,27 @@ void EnemyPatroller::drawViewCone(RenderWindow& window, Grid& grid) {
     window.draw(cone);
 }
 
+void EnemyPatroller::rotateTowards(const Vector2f& direction) {
+    if (direction.x != 0 || direction.y != 0) {
+        // Calcul de l'angle cible
+        float targetAngle = atan2(direction.y, direction.x) * (180.0f / 3.14159265358979323846f);
+
+        // Normalisation des angles pour éviter des sauts brusques
+        float angleDifference = targetAngle - enemyAngle;
+        if (angleDifference > 180.0f) angleDifference -= 360.0f;
+        if (angleDifference < -180.0f) angleDifference += 360.0f;
+
+        // Appliquer la vitesse de rotation max
+        float rotationStep = maxRotationSpeed * deltaTime;
+        if (fabs(angleDifference) <= rotationStep) {
+            enemyAngle = targetAngle; // Si proche de la cible, directement assigner
+        }
+        else {
+            enemyAngle += (angleDifference > 0 ? 1 : -1) * rotationStep;
+        }
+    }
+}
+
 // ===================================================================================Actions=================================================================================
 
 
@@ -153,6 +173,7 @@ void ChasePlayer::Execute(EnemyPatroller& state) {
     float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
     if (magnitude > 5.0f) {
         direction /= magnitude;
+        state.rotateTowards(direction);
         state.shape.move(direction * state.SPEED * state.deltaTime);
     }
     else {
@@ -160,8 +181,9 @@ void ChasePlayer::Execute(EnemyPatroller& state) {
     }
 }
 
+
 bool LookAround::CanExecute(const EnemyPatroller& state) {
-    return true;
+    return state.warning && state.atTargetPosition();
 }
 
 void LookAround::Execute(EnemyPatroller& state) {
@@ -174,13 +196,13 @@ void LookAround::Execute(EnemyPatroller& state) {
         state.setAtTargetPosition(false);
         return;
     }
-
     static float lookAroundTime = 0.0f;
     lookAroundTime += state.deltaTime;
     if (lookAroundTime >= 3.0f) {
         state.reset();
         lookAroundTime = 0.0f;
     }
+    
 }
 
 
