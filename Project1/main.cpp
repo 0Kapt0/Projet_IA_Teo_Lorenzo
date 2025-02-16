@@ -20,7 +20,7 @@ int main() {
     auto player = make_shared<Player>(200, 400);
     manager.setPlayer(player);
     manager.addEnemy(make_shared<EnemyPatroller>(100, 100));
-    manager.addEnemy(make_shared<EnemyPatroller>(700, 100));
+    //manager.addEnemy(make_shared<EnemyPatroller>(700, 100));
     grid.loadFromFile("map.txt");
 
     Clock clock;

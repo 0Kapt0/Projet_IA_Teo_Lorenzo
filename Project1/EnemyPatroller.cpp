@@ -16,26 +16,28 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
 
     VertexArray cone = getViewConeShape(grid);
     FloatRect playerBounds = player.shape.getGlobalBounds();
-
     playerDetected = false;
+    
     for (size_t i = 1; i < cone.getVertexCount() - 1; ++i) {
         if (isTriangleIntersectingRect(cone[0].position, cone[i].position, cone[i + 1].position, playerBounds)) {
             warning = true;
             playerDetected = true;
             targetpos = player.shape.getPosition();
+            cout << "ezvfiuyzeifub";
             break;
         }
     }
 
+    
     GOAPPlanner planner;
     Goal currentGoal;
     if (playerDetected) {
         currentGoal = Goal::Chasing;
     }
-    else if (!atTarget) {
+    else if (warning) {
         currentGoal = Goal::LostIt;
     }
-    else{
+    else {
         currentGoal = Goal::Patrolling;
     }
 
@@ -49,6 +51,7 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     }
 }
 
+
 bool EnemyPatroller::atTargetPosition() const {
     return atTarget;
 }
@@ -58,6 +61,7 @@ void EnemyPatroller::setAtTargetPosition(bool value) {
 }
 
 void EnemyPatroller::reset() {
+    warning = false;
     atTarget = false;
     playerDetected = false;
 }
@@ -130,25 +134,11 @@ void EnemyPatroller::drawViewCone(RenderWindow& window, Grid& grid) {
 
 
 bool ChasePlayer::CanExecute(const EnemyPatroller& state) {
-    return state.warning;
+    return state.warning && !state.atTargetPosition();
 }
 
 void ChasePlayer::Execute(EnemyPatroller& state) {
     cout << "Chasing player\n";
-    Vector2f direction = state.targetpos - state.shape.getPosition();
-    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
-    if (magnitude > 0.1f) {
-        direction /= magnitude;
-        state.shape.move(direction * state.SPEED * state.deltaTime);
-    }
-}
-
-bool MoveToLastKnownPosition::CanExecute(const EnemyPatroller& state) {
-    return !state.playerDetected && !state.atTargetPosition();
-}
-
-void MoveToLastKnownPosition::Execute(EnemyPatroller& state) {
-    cout << "Moving to last known position\n";
     Vector2f direction = state.targetpos - state.shape.getPosition();
     float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
     if (magnitude > 5.0f) {
@@ -161,12 +151,19 @@ void MoveToLastKnownPosition::Execute(EnemyPatroller& state) {
 }
 
 bool LookAround::CanExecute(const EnemyPatroller& state) {
-    return state.atTargetPosition() && !state.playerDetected;
+    return true;
 }
 
 void LookAround::Execute(EnemyPatroller& state) {
     cout << "Looking around\n";
     state.enemyAngle += 50 * state.deltaTime;
+
+    if (state.playerDetected) {
+        cout << "Player detected during LookAround, switching to Chase\n";
+        state.warning = true;
+        state.setAtTargetPosition(false);
+        return;
+    }
 
     static float lookAroundTime = 0.0f;
     lookAroundTime += state.deltaTime;
@@ -184,11 +181,11 @@ vector<Action*> GOAPPlanner::Plan(const EnemyPatroller& initialState, Goal goal)
         plan.push_back(new ChasePlayer());
     }
     else if (goal == Goal::LostIt) {
-        plan.push_back(new MoveToLastKnownPosition());
+        plan.push_back(new ChasePlayer());
         plan.push_back(new LookAround());
+
     }
     else if (goal == Goal::Patrolling) {
-        cout << "patrolling";
         // Patrolling actions would go here (e.g., Move)
     }
 
