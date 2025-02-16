@@ -51,6 +51,16 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     }
 }
 
+void EnemyPatroller::setWarning(bool alert) {
+    if (alert) {
+        shape.setFillColor(sf::Color::Blue);
+        std::cout << "EnemyPatroller alerted!\n";
+    }
+    else {
+        shape.setFillColor(sf::Color::White);
+    }
+}
+
 
 bool EnemyPatroller::atTargetPosition() const {
     return atTarget;

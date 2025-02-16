@@ -21,6 +21,7 @@ int main() {
     manager.setPlayer(player);
     manager.addEnemy(make_shared<EnemyPatroller>(100, 100));
     //manager.addEnemy(make_shared<EnemyPatroller>(700, 100));
+    manager.addCamera(std::make_shared<CameraAI>(400, 200, &manager));
     grid.loadFromFile("map.txt");
 
     Clock clock;

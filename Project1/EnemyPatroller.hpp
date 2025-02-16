@@ -35,6 +35,7 @@ public:
     bool warning = false;
     float deltaTime;
 
+    void setWarning(bool alert);
 private:
     bool atTarget = false;
     bool isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c);
