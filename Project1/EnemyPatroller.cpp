@@ -17,7 +17,7 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     VertexArray cone = getViewConeShape(grid);
     FloatRect playerBounds = player.shape.getGlobalBounds();
     playerDetected = false;
-    
+
     for (size_t i = 1; i < cone.getVertexCount() - 1; ++i) {
         if (isTriangleIntersectingRect(cone[0].position, cone[i].position, cone[i + 1].position, playerBounds)) {
             warning = true;
@@ -60,11 +60,6 @@ void EnemyPatroller::setWarning(bool alert) {
     }
 }
 
-bool EnemyPatroller::canSeePlayer(const Player& player, Grid& grid) {
-    sf::Vector2f enemyPos = shape.getPosition();
-    sf::Vector2f playerPos = player.shape.getPosition();
-    sf::Vector2f direction = playerPos - enemyPos;
-    float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
 bool EnemyPatroller::atTargetPosition() const {
     return atTarget;
@@ -108,8 +103,6 @@ bool EnemyPatroller::isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vecto
     bool hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
     return !(hasNeg && hasPos);
-}
-    return true;
 }
 
 VertexArray EnemyPatroller::getViewConeShape(Grid& grid) {
@@ -209,7 +202,7 @@ void LookAround::Execute(EnemyPatroller& state) {
         state.reset();
         lookAroundTime = 0.0f;
     }
-    
+
 }
 
 
