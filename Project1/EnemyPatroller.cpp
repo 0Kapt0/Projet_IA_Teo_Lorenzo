@@ -4,7 +4,7 @@
 using namespace sf;
 using namespace std;
 
-EnemyPatroller::EnemyPatroller(float x, float y) : Enemy(x, y) {
+EnemyPatroller::EnemyPatroller(float x, float y, Vector2f point1, Vector2f point2, Vector2f point3) : point1(point1), point2(point2), point3(point3), Enemy(x, y) {
     if (!enemyTexture.loadFromFile("assets/texture/ENEMY.png")) {
         cerr << "Erreur chargement TEXTURE de la camera !" << endl;
     }
@@ -171,6 +171,36 @@ void EnemyPatroller::rotateTowards(const Vector2f& direction) {
     }
 }
 
+void EnemyPatroller::Patrolling() {
+    Vector2f target;
+    switch (etape) {
+    case 1:
+        target = point1;
+        break;
+    case 2:
+        target = point2;
+        break;
+    case 3:
+        target = point3;
+        break;
+    default:
+        return;
+    }
+
+    Vector2f direction = target - shape.getPosition();
+    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
+    if (magnitude <= 5.0f) {
+        etape = (etape % 3) + 1;
+    }
+    else {
+        // Normaliser la direction et déplacer l'ennemi
+        direction /= magnitude;
+        rotateTowards(direction); // Tourner vers la cible
+        shape.move(direction * SPEED * deltaTime); // Déplacement de l'ennemi
+    }
+}
+
+
 // ===================================================================================Actions=================================================================================
 
 
@@ -223,6 +253,15 @@ void LookAround::Execute(EnemyPatroller& state) {
 
 }
 
+bool Patrol::CanExecute(const EnemyPatroller& state) {
+    return true;
+}
+
+void Patrol::Execute(EnemyPatroller& state) {
+    cout << "Patrolling\n";
+    state.Patrolling();
+}
+
 
 vector<Action*> GOAPPlanner::Plan(const EnemyPatroller& initialState, Goal goal) {
     vector<Action*> plan;
@@ -236,7 +275,7 @@ vector<Action*> GOAPPlanner::Plan(const EnemyPatroller& initialState, Goal goal)
 
     }
     else if (goal == Goal::Patrolling) {
-        // Patrolling actions would go here (e.g., Move)
+        plan.push_back(new Patrol());
     }
 
     return plan;
