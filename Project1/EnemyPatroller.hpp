@@ -22,7 +22,7 @@ enum class Goal {
 class EnemyPatroller : public Enemy {
 public:
     float enemyAngle = 0.0f;
-    EnemyPatroller(float x, float y);
+    EnemyPatroller(float x, float y, Vector2f point1, Vector2f point2, Vector2f point3);
     void update(float deltaTime, Grid& grid, Player& player);
     void drawViewCone(RenderWindow& window, Grid& grid);
     VertexArray getViewConeShape(Grid& grid);
@@ -31,6 +31,7 @@ public:
     // State helpers
     bool atTargetPosition() const;
     void setAtTargetPosition(bool value);
+    void Patrolling();
     void reset();
 
     float lookAroundTime = 0.0f;
@@ -43,9 +44,13 @@ public:
 
     void setWarning(bool alert, Vector2f targetpos);
 private:
+    int etape = 1;
     bool atTarget = false;
     bool isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c);
     bool isTriangleIntersectingRect(Vector2f a, Vector2f b, Vector2f c, FloatRect rect);
+    Vector2f point1;
+    Vector2f point2;
+    Vector2f point3;
 
 };
 
@@ -64,6 +69,12 @@ public:
 };
 
 class LookAround : public Action {
+public:
+    bool CanExecute(const EnemyPatroller& state) override;
+    void Execute(EnemyPatroller& state) override;
+};
+
+class Patrol : public Action {
 public:
     bool CanExecute(const EnemyPatroller& state) override;
     void Execute(EnemyPatroller& state) override;

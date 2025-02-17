@@ -19,8 +19,7 @@ int main() {
     EntityManager manager;
     auto player = make_shared<Player>(200, 400);
     manager.setPlayer(player);
-    manager.addEnemy(make_shared<EnemyPatroller>(100, 100));
-    //manager.addEnemy(make_shared<EnemyPatroller>(700, 100)); 
+    manager.addEnemy(make_shared<EnemyPatroller>(100, 100, Vector2f(400, 200), Vector2f(400, 300), Vector2f(300, 300)));
     manager.addCamera(make_shared<CameraAI>(250, 50, &manager));
     manager.addDogo(make_shared<EnemyDogo>(650, 200, &manager));
     grid.loadFromFile("map.txt");
