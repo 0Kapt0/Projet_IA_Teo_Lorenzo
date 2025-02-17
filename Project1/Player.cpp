@@ -13,6 +13,15 @@ void Player::update(float deltaTime, Grid& grid) {
     if (Keyboard::isKeyPressed(Keyboard::Q)) movement.x -= SPEED * deltaTime;
     if (Keyboard::isKeyPressed(Keyboard::D)) movement.x += SPEED * deltaTime;
 
+    if (Keyboard::isKeyPressed(Keyboard::LShift)) {
+        SPEED = 300.f;
+        isRunning = true;
+    }
+    else {
+        SPEED = 200.f;
+        isRunning = false;
+    }
+
     Vector2f newPosition = shape.getPosition() + movement;
     FloatRect newBounds(newPosition, shape.getSize());
 
@@ -29,4 +38,8 @@ void Player::update(float deltaTime, Grid& grid) {
         isWalkable(newBounds.left + newBounds.width - 1, newBounds.top + newBounds.height - 1)) {
         shape.move(movement);
     }
+}
+
+bool Player::getIsRunning() {
+    return isRunning;
 }

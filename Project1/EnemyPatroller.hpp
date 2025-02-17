@@ -43,6 +43,7 @@ public:
 
     void setWarning(bool alert, Vector2f targetpos);
 private:
+    Texture enemyTexture;
     bool atTarget = false;
     bool isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c);
     bool isTriangleIntersectingRect(Vector2f a, Vector2f b, Vector2f c, FloatRect rect);

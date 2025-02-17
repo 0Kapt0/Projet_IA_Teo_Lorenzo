@@ -3,8 +3,14 @@
 #include <cmath>
 
 CameraAI::CameraAI(float x, float y, EntityManager* manager) : Enemy(x, y), entityManager(manager) {
+    if (!cameraTexture.loadFromFile("assets/texture/CCTV.png")) {
+        cerr << "Erreur chargement TEXTURE de la camera !" << endl;
+    }
+
+    shape.setTexture(&cameraTexture);
+    shape.setScale(2.0f, 2);
     shape.setSize({ 40, 20 });
-    shape.setFillColor(Color::Green);
+    shape.setFillColor(Color::White);
     shape.setOrigin(shape.getSize().x / 2, shape.getSize().y / 2);
 }
 

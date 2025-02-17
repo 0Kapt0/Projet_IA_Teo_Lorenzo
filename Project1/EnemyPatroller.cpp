@@ -5,8 +5,14 @@ using namespace sf;
 using namespace std;
 
 EnemyPatroller::EnemyPatroller(float x, float y) : Enemy(x, y) {
+    if (!enemyTexture.loadFromFile("assets/texture/ENEMY.png")) {
+        cerr << "Erreur chargement TEXTURE de la camera !" << endl;
+    }
+
     targetpos = Vector2f(x, y);
     reset();
+    shape.setTexture(&enemyTexture);
+    shape.setFillColor(Color::White);
     shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
 }
 

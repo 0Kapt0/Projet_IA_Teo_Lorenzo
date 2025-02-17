@@ -7,6 +7,7 @@ using namespace std;
 
 EnemyDogo::EnemyDogo(float x, float y, EntityManager* manager) : Enemy(x, y), entityManager(manager) {
     targetpos = Vector2f(x, y);
+    lastKnownPosition = targetpos;
     reset();
     shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
 }
@@ -21,13 +22,13 @@ void EnemyDogo::update(float deltaTime, Grid& grid, Player& player, vector<Enemy
     // Détection par l'odeur
     if (distanceToPlayer <= 75.0f) {
         playerDetected = true;
-        targetpos = player.shape.getPosition();
+        lastKnownPosition = player.shape.getPosition();
         setAtTargetPosition(false);
     }
     // Détection par le son
-    else if (/*player.isRunning() &&*/ distanceToPlayer <= 300.0f) {
+    if (player.getIsRunning() && distanceToPlayer <= 300.0f) {
         playerDetected = true;
-        targetpos = player.shape.getPosition();
+        lastKnownPosition = player.shape.getPosition();
         setAtTargetPosition(false);
     }
     else {
@@ -52,11 +53,6 @@ void EnemyDogo::update(float deltaTime, Grid& grid, Player& player, vector<Enemy
         alertEnemies(player.shape.getPosition());
     }
 }
-
-//void EnemyDogo::stunPlayer(Player& player) {
-//    player.setStunned(true);
-//    cout << "Dogo stunned the player!\n";
-//}
 
 void EnemyDogo::alertEnemies(Vector2f targetpos) {
     if (!entityManager) return;
@@ -106,13 +102,21 @@ void EnemyDogo::rotateTowards(const Vector2f& direction) {
 }
 
 bool ChasePlayerD::CanExecute(const EnemyDogo& state) {
-    return state.playerDetected && !state.atTargetPosition();
+    return state.playerDetected || !state.atTargetPosition();
 }
 
 void ChasePlayerD::Execute(EnemyDogo& state) {
-    cout << "Dogo chasing player\n";
-    state.targetpos = state.lastKnownPosition;
-    state.setAtTargetPosition(false);
+    cout << "Dogo moving to last known position of the player\n";
+    Vector2f direction = state.lastKnownPosition - state.shape.getPosition();
+    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
+    if (magnitude > 5.0f) {
+        direction /= magnitude;
+        state.rotateTowards(direction);
+        state.shape.move(direction * state.SPEED * state.deltaTime);
+    }
+    else {
+        state.setAtTargetPosition(true);
+    }
 }
 
 vector<ActionD*> GOAPPlannerD::Plan(const EnemyDogo& initialState, Goal goal) {
@@ -122,6 +126,7 @@ vector<ActionD*> GOAPPlannerD::Plan(const EnemyDogo& initialState, Goal goal) {
         plan.push_back(new ChasePlayerD());
     }
     else if (goal == Goal::Patrolling) {
+        plan.push_back(new ChasePlayerD());
     }
 
     return plan;

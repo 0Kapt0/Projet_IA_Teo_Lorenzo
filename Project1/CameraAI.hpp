@@ -24,6 +24,7 @@ public:
     bool isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c);
 
 private:
+    Texture cameraTexture;
     Clock cooldownClock;
     float rotationSpeed = 20.0f;
     float detectionRange = 200.0f;

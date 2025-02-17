@@ -21,7 +21,6 @@ public:
     void rotateTowards(const sf::Vector2f& direction);
 
 protected:
-    float deltaTime;
     float enemyAngle;
     float maxRotationSpeed = 90.0f;
     EntityManager* entityManager;
@@ -31,6 +30,7 @@ public:
     sf::Vector2f lastKnownPosition;
     bool playerDetected;
     bool atTarget;
+    float deltaTime;
 };
 
 class ActionD {
