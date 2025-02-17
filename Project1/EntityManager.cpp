@@ -10,16 +10,16 @@ void EntityManager::addEnemy(shared_ptr<EnemyPatroller> enemy) {
     enemies.push_back(enemy);
 }
 
-std::vector<std::shared_ptr<EnemyPatroller>>& EntityManager::getEnemies() {
+vector<shared_ptr<EnemyPatroller>>& EntityManager::getEnemies() {
     return enemies;
 }
 
 
-void EntityManager::addCamera(std::shared_ptr<CameraAI> camera) {
+void EntityManager::addCamera(shared_ptr<CameraAI> camera) {
     cameras.push_back(camera);
 }
 
-std::vector<std::shared_ptr<CameraAI>>& EntityManager::getCameras() {
+vector<shared_ptr<CameraAI>>& EntityManager::getCameras() {
     return cameras;
 }
 

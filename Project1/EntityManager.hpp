@@ -15,12 +15,12 @@ class EntityManager {
 public:
     EntityManager();
 
-    void addCamera(std::shared_ptr<CameraAI> camera);
-    std::vector<std::shared_ptr<CameraAI>>& getCameras();
+    void addCamera(shared_ptr<CameraAI> camera);
+    vector<shared_ptr<CameraAI>>& getCameras();
 
     void setPlayer(shared_ptr<Player> player);
     void addEnemy(shared_ptr<EnemyPatroller> enemy);
-    std::vector<std::shared_ptr<EnemyPatroller>>& getEnemies();
+    vector<shared_ptr<EnemyPatroller>>& getEnemies();
 
     void update(float deltaTime, Grid& grid);
     void draw(RenderWindow& window, Grid& grid);
@@ -28,9 +28,9 @@ public:
     shared_ptr<Player> getPlayer() const;
 
 private:
-    std::shared_ptr<Player> player;
-    std::vector<std::shared_ptr<EnemyPatroller>> enemies;
-    std::vector<std::shared_ptr<CameraAI>> cameras;
+    shared_ptr<Player> player;
+    vector<shared_ptr<EnemyPatroller>> enemies;
+    vector<shared_ptr<CameraAI>> cameras;
 };
 
 #endif // ENTITY_MANAGER_HPP

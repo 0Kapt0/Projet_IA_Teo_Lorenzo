@@ -54,12 +54,12 @@ void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
     if (alert) {
         warning = alert;
         targetpos = newtargetpos;
-        shape.setFillColor(sf::Color::Blue);
-        std::cout << "EnemyPatroller alerted!\n";
+        shape.setFillColor(Color::Blue);
+        cout << "EnemyPatroller alerted!\n";
 
     }
     if (!alert) {
-        shape.setFillColor(sf::Color::Red);
+        shape.setFillColor(Color::Red);
     }
 }
 

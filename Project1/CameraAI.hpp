@@ -15,13 +15,13 @@ class CameraAI : public Enemy {
 public:
     CameraAI(float x, float y, EntityManager* manager);
     void update(float deltaTime, Grid& grid, Player& player);
-    void draw(sf::RenderWindow& window, Grid& grid);
+    void draw(RenderWindow& window, Grid& grid);
     bool isPlayerDetected(Player& player, Grid& grid);
     void alertEnemies(Vector2f targetpos);
     void desalertEnemies(Vector2f targetpos);
-    sf::VertexArray getViewConeShape(Grid& grid);
-    bool isTriangleIntersectingRect(sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::FloatRect rect);
-    bool isPointInTriangle(sf::Vector2f p, sf::Vector2f a, sf::Vector2f b, sf::Vector2f c);
+    VertexArray getViewConeShape(Grid& grid);
+    bool isTriangleIntersectingRect(Vector2f a, Vector2f b, Vector2f c, FloatRect rect);
+    bool isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c);
 
 private:
     Clock cooldownClock;
