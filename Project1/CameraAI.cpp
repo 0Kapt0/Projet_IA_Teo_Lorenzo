@@ -26,12 +26,12 @@ void CameraAI::update(float deltaTime, Grid& grid, Player& player) {
         if (isTriangleIntersectingRect(cone[0].position, cone[i].position, cone[i + 1].position, playerBounds)) {
             state = CameraState::ALERT;
             alertTimer = 0.0f;
-            alertEnemies();
+            alertEnemies(player.shape.getPosition());
             playerDetected = true;
             break;
         }
         else {
-            desalertEnemies();
+            desalertEnemies(player.shape.getPosition());
         }
 
     }
@@ -111,19 +111,19 @@ bool CameraAI::isPointInTriangle(sf::Vector2f p, sf::Vector2f a, sf::Vector2f b,
     return !(hasNeg && hasPos);
 }
 
-void CameraAI::alertEnemies() {
+void CameraAI::alertEnemies(Vector2f targetpos) {
     if (!entityManager) return;
 
     std::cout << "Camera Alert! Enemies notified!\n";
     for (auto& enemy : entityManager->getEnemies()) {
-        enemy->setWarning(true);
+        enemy->setWarning(true, (targetpos));
     }
 }
 
-void CameraAI::desalertEnemies() {
+void CameraAI::desalertEnemies(Vector2f targetpos) {
     if (!entityManager) return;
 
     for (auto& enemy : entityManager->getEnemies()) {
-        enemy->setWarning(false);
+        enemy->setWarning(false, targetpos);
     }
 }

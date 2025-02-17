@@ -50,10 +50,13 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     }
 }
 
-void EnemyPatroller::setWarning(bool alert) {
+void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
     if (alert) {
+        warning = alert;
+        targetpos = newtargetpos;
         shape.setFillColor(sf::Color::Blue);
         std::cout << "EnemyPatroller alerted!\n";
+
     }
     if (!alert) {
         shape.setFillColor(sf::Color::Red);

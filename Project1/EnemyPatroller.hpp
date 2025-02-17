@@ -39,7 +39,7 @@ public:
     float maxRotationSpeed = 90.0f;
     float deltaTime;
 
-    void setWarning(bool alert);
+    void setWarning(bool alert, Vector2f targetpos);
 private:
     bool atTarget = false;
     bool isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c);
