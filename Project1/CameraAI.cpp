@@ -60,7 +60,7 @@ sf::VertexArray CameraAI::getViewConeShape(Grid& grid) {
     cone.append(sf::Vertex(shape.getPosition(), sf::Color(255, 255, 0, 150)));
 
     float fov = 50.0f;
-    float viewDistance = 200.0f;
+    float viewDistance = 300.0f;
     int segments = 15;
 
     for (int i = 0; i <= segments; ++i) {

@@ -24,7 +24,8 @@ public:
     bool isPointInTriangle(sf::Vector2f p, sf::Vector2f a, sf::Vector2f b, sf::Vector2f c);
 
 private:
-    float rotationSpeed = 20.0f;
+    float rotationSpeed = 50.0f;
+    float detectionRange = 300.0f;
     float alertTimer = 0.0f;
     float cooldownTime = 3.0f;
     CameraState state = CameraState::IDLE;
