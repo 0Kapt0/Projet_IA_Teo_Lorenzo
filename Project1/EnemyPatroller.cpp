@@ -54,6 +54,8 @@ void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
     if (alert) {
         warning = alert;
         targetpos = newtargetpos;
+        lookAroundTime = 0.0f;
+        setAtTargetPosition(false);
         shape.setFillColor(Color::Blue);
         cout << "EnemyPatroller alerted!\n";
 
@@ -191,20 +193,27 @@ bool LookAround::CanExecute(const EnemyPatroller& state) {
 
 void LookAround::Execute(EnemyPatroller& state) {
     cout << "Looking around\n";
-    state.enemyAngle += 50 * state.deltaTime;
-
+    
     if (state.playerDetected) {
         cout << "Player detected during LookAround, switching to Chase\n";
+        state.lookAroundTime = 0.0f;
         state.warning = true;
         state.setAtTargetPosition(false);
         return;
     }
-    static float lookAroundTime = 0.0f;
-    lookAroundTime += state.deltaTime;
-    if (lookAroundTime >= 3.0f) {
-        state.reset();
-        lookAroundTime = 0.0f;
+    
+    state.lookAroundTime += state.deltaTime;
+    if (state.lookAroundTime <= 1.5f) {
+        state.enemyAngle += 100 * state.deltaTime * state.rotatedir;
     }
+    else state.enemyAngle += 100 * state.deltaTime * state.rotatedir * -1;
+    if (state.lookAroundTime >= 4.5f) {
+        state.reset();
+        state.lookAroundTime = 0.0f;
+        state.rotatedir = rand() % 1;
+        if (state.rotatedir == 0)state.rotatedir = -1;
+    }
+    
 
 }
 

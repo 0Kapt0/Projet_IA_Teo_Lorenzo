@@ -33,6 +33,8 @@ public:
     void setAtTargetPosition(bool value);
     void reset();
 
+    float lookAroundTime = 0.0f;
+    int rotatedir =1;
     Vector2f targetpos;
     bool playerDetected = false;
     bool warning = false;
