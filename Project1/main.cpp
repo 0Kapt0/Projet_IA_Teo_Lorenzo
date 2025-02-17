@@ -2,7 +2,6 @@
 #include "Player.hpp"
 #include "EnemyPatroller.hpp"
 #include "Enemy.hpp"
-#include "EnemyPatroller.hpp"
 #include "Grid.hpp"
 #include "EntityManager.hpp"
 #include <vector>
@@ -23,6 +22,7 @@ int main() {
     manager.addEnemy(make_shared<EnemyPatroller>(100, 100));
     //manager.addEnemy(make_shared<EnemyPatroller>(700, 100)); 
     manager.addCamera(make_shared<CameraAI>(250, 50, &manager));
+    manager.addDogo(make_shared<EnemyDogo>(650, 200, &manager));
     grid.loadFromFile("map.txt");
 
     Clock clock;

@@ -8,8 +8,10 @@
 #include "EnemyPatroller.hpp"
 #include "Grid.hpp"
 #include "CameraAI.hpp"
+#include "EnemyDogo.hpp"
 
 class CameraAI;
+class EnemyDogo;
 
 class EntityManager {
 public:
@@ -22,6 +24,9 @@ public:
     void addEnemy(shared_ptr<EnemyPatroller> enemy);
     vector<shared_ptr<EnemyPatroller>>& getEnemies();
 
+    void addDogo(shared_ptr<EnemyDogo> dogo);
+    vector<shared_ptr<EnemyDogo>>& getDogos();
+
     void update(float deltaTime, Grid& grid);
     void draw(RenderWindow& window, Grid& grid);
 
@@ -30,6 +35,7 @@ public:
 private:
     shared_ptr<Player> player;
     vector<shared_ptr<EnemyPatroller>> enemies;
+    vector<shared_ptr<EnemyDogo>> dogos;
     vector<shared_ptr<CameraAI>> cameras;
 };
 
