@@ -12,11 +12,16 @@ void CameraAI::update(float deltaTime, Grid& grid, Player& player) {
     static int direction = 1;
     static float targetAngle = 90.0f;
 
-    if (std::abs(shape.getRotation() - targetAngle) < 1.0f) {
+    if (cooldownClock.getElapsedTime().asSeconds() > cooldownTimeFreeze) {
+        shape.rotate(direction * rotationSpeed * deltaTime);
+    }
+    if (cooldownClock.getElapsedTime().asSeconds() > cooldownTime) {
         direction *= -1;
         targetAngle += direction * 90.0f;
+        cooldownClock.restart();
     }
-    shape.rotate(direction * rotationSpeed * deltaTime);
+
+
 
     sf::VertexArray cone = getViewConeShape(grid);
     sf::FloatRect playerBounds = player.shape.getGlobalBounds();

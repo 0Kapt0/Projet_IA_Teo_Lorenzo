@@ -24,10 +24,12 @@ public:
     bool isPointInTriangle(sf::Vector2f p, sf::Vector2f a, sf::Vector2f b, sf::Vector2f c);
 
 private:
+    Clock cooldownClock;
     float rotationSpeed = 20.0f;
     float detectionRange = 200.0f;
     float alertTimer = 0.0f;
-    float cooldownTime = 300.0f;
+    float cooldownTime = 7.5f;
+    float cooldownTimeFreeze = 3.0f;
     CameraState state = CameraState::IDLE;
     EntityManager* entityManager;
 };
