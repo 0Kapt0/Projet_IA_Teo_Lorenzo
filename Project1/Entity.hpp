@@ -2,15 +2,22 @@
 #define ENTITY_HPP
 
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #include "Grid.hpp"
+
+using namespace sf;
+using namespace std;
+
 
 class Entity {
 public:
-    sf::RectangleShape shape;
-    sf::Vector2f velocity;
+    RectangleShape shape;
+    Vector2f velocity;
 
-    Entity(float x, float y, sf::Color color);
+    Entity(float x, float y, Color color);
     virtual void update(float deltaTime, Grid& grid) = 0;
 };
+
+
 
 #endif // ENTITY_HPP
