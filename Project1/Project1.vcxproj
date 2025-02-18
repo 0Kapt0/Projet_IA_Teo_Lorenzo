@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AllyAi.cpp" />
     <ClCompile Include="CameraAI.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyDogo.cpp" />
@@ -143,6 +144,7 @@
     <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AllyAi.hpp" />
     <ClInclude Include="CameraAI.hpp" />
     <ClInclude Include="Enemy.hpp" />
     <ClInclude Include="EnemyDogo.hpp" />

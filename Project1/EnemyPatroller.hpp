@@ -83,7 +83,7 @@ public:
 
 class GOAPPlanner {
 public:
-    vector<Action*> Plan(const EnemyPatroller& initialState, Goal goal);
+    vector<Action*> Plan(const EnemyPatroller& initialState, Goal Goal);
 };
 
 #endif
