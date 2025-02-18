@@ -9,34 +9,43 @@
 #include "Grid.hpp"
 #include "CameraAI.hpp"
 #include "EnemyDogo.hpp"
+#include "AllyAi.hpp"
 
 class CameraAI;
 class EnemyDogo;
+class AllyAI;
 
 class EntityManager {
 public:
     EntityManager();
 
-    void addCamera(shared_ptr<CameraAI> camera);
-    vector<shared_ptr<CameraAI>>& getCameras();
+    void setPlayer(std::shared_ptr<Player> player);
+    void addEnemy(std::shared_ptr<EnemyPatroller> enemy);
+    std::vector<std::shared_ptr<EnemyPatroller>>& getEnemies();
 
-    void setPlayer(shared_ptr<Player> player);
-    void addEnemy(shared_ptr<EnemyPatroller> enemy);
-    vector<shared_ptr<EnemyPatroller>>& getEnemies();
+    void addDogo(std::shared_ptr<EnemyDogo> dogo);
+    std::vector<std::shared_ptr<EnemyDogo>>& getDogos();
 
-    void addDogo(shared_ptr<EnemyDogo> dogo);
-    vector<shared_ptr<EnemyDogo>>& getDogos();
+    void addCamera(std::shared_ptr<CameraAI> camera);
+    std::vector<std::shared_ptr<CameraAI>>& getCameras();
 
+    void addAlly(std::shared_ptr<AllyAI> ally);
+    std::vector<std::shared_ptr<AllyAI>>& getAllies();
+
+    void alertAllies(sf::Vector2f targetpos);
     void update(float deltaTime, Grid& grid);
-    void draw(RenderWindow& window, Grid& grid);
+    void draw(sf::RenderWindow& window, Grid& grid);
 
-    shared_ptr<Player> getPlayer() const;
+    std::shared_ptr<Player> getPlayer() const;
+    Grid& getGrid() { return grid; }
 
 private:
-    shared_ptr<Player> player;
-    vector<shared_ptr<EnemyPatroller>> enemies;
-    vector<shared_ptr<EnemyDogo>> dogos;
-    vector<shared_ptr<CameraAI>> cameras;
+    std::shared_ptr<Player> player;
+    std::vector<std::shared_ptr<EnemyPatroller>> enemies;
+    std::vector<std::shared_ptr<EnemyDogo>> dogos;
+    std::vector<std::shared_ptr<CameraAI>> cameras;
+    std::vector<std::shared_ptr<AllyAI>> allies;
+    Grid grid;
 };
 
 #endif // ENTITY_MANAGER_HPP

@@ -2,32 +2,49 @@
 
 EntityManager::EntityManager() : player(nullptr) {}
 
-void EntityManager::setPlayer(shared_ptr<Player> player) {
+void EntityManager::setPlayer(std::shared_ptr<Player> player) {
     this->player = player;
 }
 
-void EntityManager::addEnemy(shared_ptr<EnemyPatroller> enemy) {
+void EntityManager::addEnemy(std::shared_ptr<EnemyPatroller> enemy) {
     enemies.push_back(enemy);
 }
 
-vector<shared_ptr<EnemyPatroller>>& EntityManager::getEnemies() {
+std::vector<std::shared_ptr<EnemyPatroller>>& EntityManager::getEnemies() {
     return enemies;
 }
 
-void EntityManager::addDogo(shared_ptr<EnemyDogo> dogo) {
+void EntityManager::addDogo(std::shared_ptr<EnemyDogo> dogo) {
     dogos.push_back(dogo);
 }
 
-vector<shared_ptr<EnemyDogo>>& EntityManager::getDogos() {
+std::vector<std::shared_ptr<EnemyDogo>>& EntityManager::getDogos() {
     return dogos;
 }
 
-void EntityManager::addCamera(shared_ptr<CameraAI> camera) {
+void EntityManager::addCamera(std::shared_ptr<CameraAI> camera) {
     cameras.push_back(camera);
 }
 
-vector<shared_ptr<CameraAI>>& EntityManager::getCameras() {
+std::vector<std::shared_ptr<CameraAI>>& EntityManager::getCameras() {
     return cameras;
+}
+
+// Ajout de la gestion des alliés
+void EntityManager::addAlly(std::shared_ptr<AllyAI> ally) {
+    allies.push_back(ally);
+}
+
+std::vector<std::shared_ptr<AllyAI>>& EntityManager::getAllies() {
+    return allies;
+}
+
+void EntityManager::alertAllies(sf::Vector2f targetpos) {
+    std::cout << "Alerting all allies at position: (" << targetpos.x << ", " << targetpos.y << ")\n";
+
+    for (auto& ally : allies) {
+        ally->alertAllies(targetpos);
+    }
 }
 
 void EntityManager::update(float deltaTime, Grid& grid) {
@@ -40,21 +57,36 @@ void EntityManager::update(float deltaTime, Grid& grid) {
         enemy->update(deltaTime, grid, *player);
     }
 
-    vector<Enemy*> enemyPointers;
+    std::vector<Enemy*> enemyPointers;
     for (auto& enemy : enemies) {
         enemyPointers.push_back(enemy.get());
     }
 
     for (auto& dogo : dogos) {
-        dogo->update(deltaTime, grid, *player, enemyPointers);
+        sf::Vector2i gridPos(
+            static_cast<int>(dogo->shape.getPosition().x / CELL_SIZE),
+            static_cast<int>(dogo->shape.getPosition().y / CELL_SIZE)
+        );
+
+        if (grid.isWalkable(gridPos.x, gridPos.y)) {
+            dogo->update(deltaTime, grid, *player, enemyPointers);
+        }
+        else {
+            dogo->computePathToPlayer();
+        }
     }
 
     for (auto& camera : cameras) {
         camera->update(deltaTime, grid, *player);
     }
+
+    for (auto& ally : allies) {
+        ally->updateA(deltaTime, grid, *player, enemyPointers);
+    }
 }
-void EntityManager::draw(RenderWindow& window, Grid& grid) {
-    
+
+void EntityManager::draw(sf::RenderWindow& window, Grid& grid) {
+
     if (player) {
         window.draw(player->shape);
     }
@@ -68,8 +100,11 @@ void EntityManager::draw(RenderWindow& window, Grid& grid) {
     for (auto& camera : cameras) {
         camera->draw(window, grid);
     }
+    for (auto& ally : allies) {
+        window.draw(ally->shape);
+    }
 }
 
-shared_ptr<Player> EntityManager::getPlayer() const {
+std::shared_ptr<Player> EntityManager::getPlayer() const {
     return player;
 }

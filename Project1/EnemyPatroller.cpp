@@ -263,18 +263,18 @@ void Patrol::Execute(EnemyPatroller& state) {
 }
 
 
-vector<Action*> GOAPPlanner::Plan(const EnemyPatroller& initialState, Goal goal) {
+vector<Action*> GOAPPlanner::Plan(const EnemyPatroller& initialState, Goal Goal) {
     vector<Action*> plan;
 
-    if (goal == Goal::Chasing) {
+    if (Goal == Goal::Chasing) {
         plan.push_back(new ChasePlayer());
     }
-    else if (goal == Goal::LostIt) {
+    else if (Goal == Goal::LostIt) {
         plan.push_back(new ChasePlayer());
         plan.push_back(new LookAround());
 
     }
-    else if (goal == Goal::Patrolling) {
+    else if (Goal == Goal::Patrolling) {
         plan.push_back(new Patrol());
     }
 
