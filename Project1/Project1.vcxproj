@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CameraAI.cpp" />
+    <ClCompile Include="Cookie.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyDogo.cpp" />
     <ClCompile Include="EnemyPatroller.cpp" />
@@ -146,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraAI.hpp" />
+    <ClInclude Include="Cookie.hpp" />
     <ClInclude Include="Enemy.hpp" />
     <ClInclude Include="EnemyDogo.hpp" />
     <ClInclude Include="EnemyPatroller.hpp" />
