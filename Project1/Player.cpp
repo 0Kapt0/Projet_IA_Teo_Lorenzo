@@ -1,5 +1,6 @@
 // player.cpp
 #include "Player.hpp"
+
 #include <SFML/Window/Keyboard.hpp>
 
 Player::Player(float x, float y) : Entity(x, y, Color::Blue) {
@@ -21,7 +22,10 @@ void Player::update(float deltaTime, Grid& grid) {
         SPEED = 200.f;
         isRunning = false;
     }
+    if (Keyboard::isKeyPressed(Keyboard::E)) {
 
+
+    }
     Vector2f newPosition = shape.getPosition() + movement;
     FloatRect newBounds(newPosition, shape.getSize());
 

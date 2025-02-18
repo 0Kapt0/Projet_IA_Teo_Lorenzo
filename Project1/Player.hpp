@@ -2,6 +2,7 @@
 #define PLAYER_HPP
 
 #include "Entity.hpp"
+#include "Cookie.hpp"
 
 class Player : public Entity {
 public:
@@ -9,6 +10,7 @@ public:
     Player(float x, float y);
     void update(float deltaTime, Grid& grid) override;
     bool getIsRunning();
+    vector<Cookie> cookies;
 private:
     bool isRunning = false;
 };
