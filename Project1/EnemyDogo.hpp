@@ -22,7 +22,7 @@ public:
     void draw(sf::RenderWindow& window, Grid& grid);
     void computePathToPlayer(Grid& grid, const sf::Vector2f& playerPos);
     sf::RectangleShape getShape() const { return shape; }
-
+    void alignToGrid();
 private:
     sf::RectangleShape shape;
     std::queue<sf::Vector2f> pathToPlayer;

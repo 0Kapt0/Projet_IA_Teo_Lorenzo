@@ -1,4 +1,4 @@
-#include "EntityManager.hpp"
+﻿#include "EntityManager.hpp"
 
 EntityManager::EntityManager() : player(nullptr) {}
 
@@ -30,7 +30,7 @@ std::vector<std::shared_ptr<CameraAI>>& EntityManager::getCameras() {
     return cameras;
 }
 
-// Ajout de la gestion des alli�s
+// Ajout de la gestion des alliés
 void EntityManager::addAlly(std::shared_ptr<AllyAI> ally) {
     allies.push_back(ally);
 }
@@ -68,12 +68,10 @@ void EntityManager::update(float deltaTime, Grid& grid) {
             static_cast<int>(dogo->getShape().getPosition().y / CELL_SIZE)
         );
 
-        if (grid.isWalkable(gridPos.x, gridPos.y)) {
-            dogo->update(deltaTime, grid, *player);
-        }
-        else {
-            dogo->computePathToPlayer(grid, player->getPosition());
-        }
+
+        dogo->update(deltaTime, grid, *player);
+
+        dogo->computePathToPlayer(grid, player->getPosition());
     }
 
     for (auto& camera : cameras) {

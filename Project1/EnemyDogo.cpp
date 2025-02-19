@@ -13,74 +13,70 @@ ChasingDogo::ChasingDogo(float x, float y) {
     shape.setFillColor(Color::Red);
     shape.setPosition(x, y);
     lastPosition = shape.getPosition();
+    /*shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);*/
+    alignToGrid();
 }
 
 void ChasingDogo::update(float deltaTime, Grid& grid, Player& player) {
-    // 🔄 Recalcule le chemin toutes les 30 frames
-    if (frameCounter % 30 == 0) {
-        computePathToPlayer(grid, player.getPosition());
-    }
     frameCounter++;
 
-    if (pathToPlayer.empty()) {
-        cout << "🔄 Aucun chemin valide, recalcul immédiat..." << endl;
+    // 🔄 Recalcule le chemin toutes les 30 frames ou si la file est vide
+    if (frameCounter % 30 == 0 || pathToPlayer.empty()) {
         computePathToPlayer(grid, player.getPosition());
-        return;
     }
 
-    Vector2f nextPos = pathToPlayer.front();
-    Vector2f direction = nextPos - shape.getPosition();
-    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
+    if (pathToPlayer.empty()) return;
 
-    // ✅ Vérification si la prochaine case est un mur
-    Vector2i nextGridPos(
-        static_cast<int>(nextPos.x / CELL_SIZE),
-        static_cast<int>(nextPos.y / CELL_SIZE)
-    );
+    Vector2f currentPos = shape.getPosition();
+    Vector2f targetPos = pathToPlayer.front();
+    Vector2f direction = targetPos - currentPos;
+    float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
 
-    if (!grid.isWalkable(nextGridPos.x, nextGridPos.y)) {
-        cout << "🚨 Prochain mouvement bloqué en (" << nextGridPos.x << "," << nextGridPos.y << "), recalcul..." << endl;
-        computePathToPlayer(grid, player.getPosition());
-        return;
+    // ✅ Détecter si on est trop proche du prochain point et passer au suivant
+    if (distance < 5.0f) {
+        pathToPlayer.pop();
+        if (pathToPlayer.empty()) return; // Fin du chemin
+        targetPos = pathToPlayer.front();
+        direction = targetPos - currentPos;
+        distance = sqrt(direction.x * direction.x + direction.y * direction.y);
     }
 
-    // 🛠 Ajustement pour éviter les collisions avec les murs
-    float margin = 2.0f;  // Petite marge pour éviter de coller aux murs
-    Vector2f futurePos = shape.getPosition() + (direction * speed * deltaTime);
+    // ✅ Correction des angles bloqués
+    Vector2f nextPos = currentPos + (direction / distance) * speed * deltaTime;
 
-    Vector2i futureGridPos(
-        static_cast<int>((futurePos.x + margin) / CELL_SIZE),
-        static_cast<int>((futurePos.y + margin) / CELL_SIZE)
-    );
+    // Vérifier si on approche un angle et ajuster
+    Vector2i gridPos = Vector2i(static_cast<int>(nextPos.x / CELL_SIZE), static_cast<int>(nextPos.y / CELL_SIZE));
+    Vector2i futureGridPos = Vector2i(static_cast<int>((nextPos.x + direction.x * speed * deltaTime) / CELL_SIZE),
+                                      static_cast<int>((nextPos.y + direction.y * speed * deltaTime) / CELL_SIZE));
 
     if (!grid.isWalkable(futureGridPos.x, futureGridPos.y)) {
-        cout << "🚨 Le Dogo va entrer en collision avec un mur ! Recalcul..." << endl;
-        computePathToPlayer(grid, player.getPosition());
-        return;
-    }
-
-    // ✅ Déplacement du Dogo
-    if (magnitude > 2.0f) {
-        direction /= magnitude;
-        shape.move(direction * speed * deltaTime);
-    }
-
-    // 🔄 Vérification si le Dogo est bloqué depuis longtemps
-    if (shape.getPosition() == lastPosition) {
-        stuckCounter++;
-        if (stuckCounter > 20) {  // Augmenté pour éviter les recalculs inutiles
-            cout << "🚨 Dogo semble coincé ! Recalcul forcé..." << endl;
-            computePathToPlayer(grid, player.getPosition());
-            stuckCounter = 0;
+        // 🔄 Essayer d'ajuster en priorisant l'axe avec le plus grand mouvement
+        if (abs(direction.x) > abs(direction.y)) {
+            nextPos.x = currentPos.x + (direction.x / abs(direction.x)) * speed * deltaTime;
+        } else {
+            nextPos.y = currentPos.y + (direction.y / abs(direction.y)) * speed * deltaTime;
         }
     }
-    else {
-        stuckCounter = 0;
-    }
 
-    lastPosition = shape.getPosition();
+    // ✅ Déplacement final sans blocage
+    shape.setPosition(nextPos);
 }
 
+
+
+
+
+
+void ChasingDogo::alignToGrid() {
+    Vector2f pos = shape.getPosition();
+    int gridX = static_cast<int>(pos.x / CELL_SIZE);
+    int gridY = static_cast<int>(pos.y / CELL_SIZE);
+
+    shape.setPosition(
+        (gridX * CELL_SIZE) + (CELL_SIZE / 2),
+        (gridY * CELL_SIZE) + (CELL_SIZE / 2)
+    );
+}
 
 
 
@@ -133,9 +129,10 @@ void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
     cameFrom[start] = start;
     costSoFar[start] = 0;
 
+    // 🔥 Ajout des directions, mais filtrage des diagonales dangereuses
     vector<Vector2i> directions = {
-        {0, -1}, {0, 1}, {-1, 0}, {1, 0},
-        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
+        {0, -1}, {0, 1}, {-1, 0}, {1, 0},   // Droite, Gauche, Haut, Bas
+        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}  // Diagonales
     };
 
     while (!openSet.empty()) {
@@ -167,6 +164,19 @@ void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
         for (const auto& dir : directions) {
             Vector2i neighbor = current.pos + dir;
 
+            // 🔴 Vérifie si on est en diagonale
+            bool isDiagonal = abs(dir.x) == 1 && abs(dir.y) == 1;
+
+            if (isDiagonal) {
+                // 🔴 Vérification pour empêcher de traverser un coin de mur en diagonale
+                Vector2i check1 = { current.pos.x + dir.x, current.pos.y };
+                Vector2i check2 = { current.pos.x, current.pos.y + dir.y };
+
+                if (!grid.isWalkable(check1.x, check1.y) || !grid.isWalkable(check2.x, check2.y)) {
+                    continue; // 🚧 Ignore la diagonale bloquée
+                }
+            }
+
             if (!grid.isWalkable(neighbor.x, neighbor.y)) continue;
 
             float newCost = costSoFar[current.pos] + 1;
@@ -179,5 +189,7 @@ void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
         }
     }
 }
+
+
 
 

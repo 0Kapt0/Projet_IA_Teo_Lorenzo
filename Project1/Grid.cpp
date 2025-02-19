@@ -71,8 +71,11 @@ Cell& Grid::getCell(int x, int y) {
 
 bool Grid::isWalkable(int x, int y) const {
     if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
-    return cells[y][x].walkable;
+
+    return cells[round(y)][round(x)].walkable;
 }
+
+
 
 vector<Vector2i> Grid::getNeighbors(int x, int y) const {
     vector<Vector2i> neighbors;
