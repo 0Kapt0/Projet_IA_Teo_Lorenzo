@@ -62,8 +62,23 @@ void ChasingDogo::update(float deltaTime, Grid& grid, Player& player) {
     // ✅ Déplacement du Dogo
     if (magnitude > 2.0f) {
         direction /= magnitude;
-        shape.move(direction * speed * deltaTime);
+
+        // ✅ Vérifier si le Dogo est bloqué en tentant d'aller à droite
+        Vector2f futurePos = shape.getPosition() + (direction * speed * deltaTime);
+        Vector2i futureGridPos(
+            static_cast<int>(futurePos.x / CELL_SIZE),
+            static_cast<int>(futurePos.y / CELL_SIZE)
+        );
+
+        if (!grid.isWalkable(futureGridPos.x, futureGridPos.y)) {
+            cout << "🚧 Blocage détecté en (" << futureGridPos.x << "," << futureGridPos.y << "), recalcul..." << endl;
+            computePathToPlayer(grid, player.getPosition());
+        }
+        else {
+            shape.move(direction * speed * deltaTime);
+        }
     }
+
 
     // 🔄 Vérification si le Dogo est bloqué depuis longtemps
     if (shape.getPosition() == lastPosition) {
