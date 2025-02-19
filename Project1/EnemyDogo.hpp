@@ -1,69 +1,37 @@
-﻿#ifndef ENEMY_DOGO_HPP
-#define ENEMY_DOGO_HPP
+﻿#ifndef CHASING_DOGO_HPP
+#define CHASING_DOGO_HPP
 
-#include "Enemy.hpp"
-#include "Player.hpp"
-#include "Grid.hpp"
-#include "EntityManager.hpp"
+#include <SFML/Graphics.hpp>
+#include <queue>
 #include <vector>
 #include <map>
-#include <queue>
 
-class EntityManager;
+class Grid;
+class Player;
 
-// 📌 Comparator pour utiliser sf::Vector2i dans std::map et std::set
 struct Vector2iComparator {
     bool operator()(const sf::Vector2i& a, const sf::Vector2i& b) const {
         return std::tie(a.x, a.y) < std::tie(b.x, b.y);
     }
 };
 
-
-class EnemyDogo : public Enemy {
+class ChasingDogo {
 public:
-    EnemyDogo(float x, float y, EntityManager* manager);
-    void update(float deltaTime, Grid& grid, Player& player, std::vector<Enemy*>& nearbyEnemies);
-    void alertEnemies(sf::Vector2f targetpos);
-    void desalertEnemies(sf::Vector2f targetpos);
-    void reset();
-    bool atTargetPosition() const;
-    void setAtTargetPosition(bool value);
-    void rotateTowards(const sf::Vector2f& direction);
-    void computePathToPlayer();  // Recalcule un chemin valide
+    ChasingDogo(float x, float y);
+    void update(float deltaTime, Grid& grid, Player& player);
+    void draw(sf::RenderWindow& window, Grid& grid);
+    void computePathToPlayer(Grid& grid, const sf::Vector2f& playerPos);
+    sf::RectangleShape getShape() const { return shape; }
 
-protected:
-    float enemyAngle;
-    float maxRotationSpeed = 90.0f;
-
-public:
-    EntityManager* entityManager;
-    sf::Vector2f targetpos;
-    sf::Vector2f lastKnownPosition;
-    sf::Texture dogoTexture;
-    bool playerDetected;
-    bool atTarget;
-    float deltaTime;
+private:
+    sf::RectangleShape shape;
     std::queue<sf::Vector2f> pathToPlayer;
-    EntityManager* getEntityManager() const { return entityManager; }
+    float speed = 60.0f;
+    std::vector<sf::Vector2i> debugPath;
 
+    sf::Vector2f lastPosition;
+    int stuckCounter = 0;
+    int frameCounter = 0;  // 🔄 Permet de recalculer le chemin régulièrement
 };
 
-class ActionD {
-public:
-    virtual bool CanExecute(const EnemyDogo& state) = 0;
-    virtual void Execute(EnemyDogo& state) = 0;
-    virtual ~ActionD() {}
-};
-
-class ChasePlayerD : public ActionD {
-public:
-    bool CanExecute(const EnemyDogo& state) override;
-    void Execute(EnemyDogo& state) override;
-};
-
-class GOAPPlannerD {
-public:
-    std::vector<ActionD*> Plan(const EnemyDogo& initialState, Goal Goal);
-};
-
-#endif // ENEMY_DOGO_HPP
+#endif // CHASING_DOGO_HPP

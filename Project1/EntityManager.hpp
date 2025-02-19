@@ -12,7 +12,7 @@
 #include "AllyAi.hpp"
 
 class CameraAI;
-class EnemyDogo;
+class ChasingDogo;
 class AllyAI;
 
 class EntityManager {
@@ -23,8 +23,8 @@ public:
     void addEnemy(std::shared_ptr<EnemyPatroller> enemy);
     std::vector<std::shared_ptr<EnemyPatroller>>& getEnemies();
 
-    void addDogo(std::shared_ptr<EnemyDogo> dogo);
-    std::vector<std::shared_ptr<EnemyDogo>>& getDogos();
+    void addDogo(std::shared_ptr<ChasingDogo> dogo);
+    std::vector<std::shared_ptr<ChasingDogo>>& getDogos();
 
     void addCamera(std::shared_ptr<CameraAI> camera);
     std::vector<std::shared_ptr<CameraAI>>& getCameras();
@@ -42,7 +42,7 @@ public:
 private:
     std::shared_ptr<Player> player;
     std::vector<std::shared_ptr<EnemyPatroller>> enemies;
-    std::vector<std::shared_ptr<EnemyDogo>> dogos;
+    std::vector<std::shared_ptr<ChasingDogo>> dogos;
     std::vector<std::shared_ptr<CameraAI>> cameras;
     std::vector<std::shared_ptr<AllyAI>> allies;
     Grid grid;

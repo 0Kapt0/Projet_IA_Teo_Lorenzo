@@ -21,7 +21,7 @@ int main() {
 
     manager.addEnemy(std::make_shared<EnemyPatroller>(100, 100, sf::Vector2f(400, 200), sf::Vector2f(400, 300), sf::Vector2f(300, 300)));
     manager.addCamera(std::make_shared<CameraAI>(250, 50, &manager));
-    manager.addDogo(std::make_shared<EnemyDogo>(650, 200, &manager));
+    manager.addDogo(std::make_shared<ChasingDogo>(650, 200));
 
     // Ajouter un allié au manager
     auto ally1 = std::make_shared<AllyAI>(300, 400, &manager);

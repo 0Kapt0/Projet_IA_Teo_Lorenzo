@@ -14,11 +14,11 @@ std::vector<std::shared_ptr<EnemyPatroller>>& EntityManager::getEnemies() {
     return enemies;
 }
 
-void EntityManager::addDogo(std::shared_ptr<EnemyDogo> dogo) {
+void EntityManager::addDogo(std::shared_ptr<ChasingDogo> dogo) {
     dogos.push_back(dogo);
 }
 
-std::vector<std::shared_ptr<EnemyDogo>>& EntityManager::getDogos() {
+std::vector<std::shared_ptr<ChasingDogo>>& EntityManager::getDogos() {
     return dogos;
 }
 
@@ -64,15 +64,15 @@ void EntityManager::update(float deltaTime, Grid& grid) {
 
     for (auto& dogo : dogos) {
         sf::Vector2i gridPos(
-            static_cast<int>(dogo->shape.getPosition().x / CELL_SIZE),
-            static_cast<int>(dogo->shape.getPosition().y / CELL_SIZE)
+            static_cast<int>(dogo->getShape().getPosition().x / CELL_SIZE),
+            static_cast<int>(dogo->getShape().getPosition().y / CELL_SIZE)
         );
 
         if (grid.isWalkable(gridPos.x, gridPos.y)) {
-            dogo->update(deltaTime, grid, *player, enemyPointers);
+            dogo->update(deltaTime, grid, *player);
         }
         else {
-            dogo->computePathToPlayer();
+            dogo->computePathToPlayer(grid, player->getPosition());
         }
     }
 
@@ -95,7 +95,7 @@ void EntityManager::draw(sf::RenderWindow& window, Grid& grid) {
         window.draw(enemy->shape);
     }
     for (auto& dogo : dogos) {
-        window.draw(dogo->shape);
+        window.draw(dogo->getShape());
     }
     for (auto& camera : cameras) {
         camera->draw(window, grid);

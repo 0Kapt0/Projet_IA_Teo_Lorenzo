@@ -1,230 +1,183 @@
 ﻿#include "EnemyDogo.hpp"
-#include <cmath>
+#include "Grid.hpp"
+#include "Player.hpp"
 #include <iostream>
+#include <queue>
+#include <cmath>
 
 using namespace sf;
 using namespace std;
 
-EnemyDogo::EnemyDogo(float x, float y, EntityManager* manager) : Enemy(x, y), entityManager(manager) {
-    if (!dogoTexture.loadFromFile("assets/texture/DOGO.png")) {
-        cerr << "Erreur chargement TEXTURE de la camera !" << endl;
-    }
-
-    shape.setTexture(&dogoTexture);
-    shape.setScale(2.0f, 2.0f);
-    targetpos = Vector2f(x, y);
-    lastKnownPosition = targetpos;
-    reset();
-    shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
+ChasingDogo::ChasingDogo(float x, float y) {
+    shape.setSize(Vector2f(30.0f, 30.0f));
+    shape.setFillColor(Color::Red);
+    shape.setPosition(x, y);
+    lastPosition = shape.getPosition();
 }
 
-void EnemyDogo::update(float deltaTime, Grid& grid, Player& player, vector<Enemy*>& nearbyEnemies) {
-    this->deltaTime = deltaTime;
-    shape.setRotation(enemyAngle);
-
-    float distanceToPlayer = sqrt(pow(player.shape.getPosition().x - shape.getPosition().x, 2) +
-        pow(player.shape.getPosition().y - shape.getPosition().y, 2));
-
-    // 📌 Détection par l'odeur
-    if (distanceToPlayer <= 75.0f) {
-        playerDetected = true;
-        lastKnownPosition = player.shape.getPosition();
-        setAtTargetPosition(false);
+void ChasingDogo::update(float deltaTime, Grid& grid, Player& player) {
+    // 🔄 Recalcule le chemin toutes les 30 frames
+    if (frameCounter % 30 == 0) {
+        computePathToPlayer(grid, player.getPosition());
     }
-    // 📌 Détection par le son
-    if (player.getIsRunning() && distanceToPlayer <= 300.0f) {
-        playerDetected = true;
-        lastKnownPosition = player.shape.getPosition();
-        setAtTargetPosition(false);
-    }
-    else {
-        playerDetected = false;
+    frameCounter++;
+
+    if (pathToPlayer.empty()) {
+        cout << "🔄 Aucun chemin valide, recalcul immédiat..." << endl;
+        computePathToPlayer(grid, player.getPosition());
+        return;
     }
 
-    // 📌 Le Dogo NE DOIT PAS suivre le joueur directement, juste utiliser A*
-    GOAPPlannerD planner;
-    Goal currentGoal = playerDetected ? Goal::Chasing : Goal::Patrolling;
+    Vector2f nextPos = pathToPlayer.front();
+    Vector2f direction = nextPos - shape.getPosition();
+    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
 
-    vector<ActionD*> actions = planner.Plan(*this, currentGoal);
-    for (ActionD* action : actions) {
-        if (action->CanExecute(*this)) {
-            action->Execute(*this);
-            break;
+    // ✅ Vérification si la prochaine case est un mur
+    Vector2i nextGridPos(
+        static_cast<int>(nextPos.x / CELL_SIZE),
+        static_cast<int>(nextPos.y / CELL_SIZE)
+    );
+
+    if (!grid.isWalkable(nextGridPos.x, nextGridPos.y)) {
+        cout << "🚨 Prochain mouvement bloqué en (" << nextGridPos.x << "," << nextGridPos.y << "), recalcul..." << endl;
+        computePathToPlayer(grid, player.getPosition());
+        return;
+    }
+
+    // 🛠 Ajustement pour éviter les collisions avec les murs
+    float margin = 2.0f;  // Petite marge pour éviter de coller aux murs
+    Vector2f futurePos = shape.getPosition() + (direction * speed * deltaTime);
+
+    Vector2i futureGridPos(
+        static_cast<int>((futurePos.x + margin) / CELL_SIZE),
+        static_cast<int>((futurePos.y + margin) / CELL_SIZE)
+    );
+
+    if (!grid.isWalkable(futureGridPos.x, futureGridPos.y)) {
+        cout << "🚨 Le Dogo va entrer en collision avec un mur ! Recalcul..." << endl;
+        computePathToPlayer(grid, player.getPosition());
+        return;
+    }
+
+    // ✅ Déplacement du Dogo
+    if (magnitude > 2.0f) {
+        direction /= magnitude;
+        shape.move(direction * speed * deltaTime);
+    }
+
+    // 🔄 Vérification si le Dogo est bloqué depuis longtemps
+    if (shape.getPosition() == lastPosition) {
+        stuckCounter++;
+        if (stuckCounter > 20) {  // Augmenté pour éviter les recalculs inutiles
+            cout << "🚨 Dogo semble coincé ! Recalcul forcé..." << endl;
+            computePathToPlayer(grid, player.getPosition());
+            stuckCounter = 0;
         }
     }
+    else {
+        stuckCounter = 0;
+    }
 
-    // 📌 Vérifier si le Dogo touche le joueur
-    if (shape.getGlobalBounds().intersects(player.shape.getGlobalBounds())) {
-        alertEnemies(player.shape.getPosition());
+    lastPosition = shape.getPosition();
+}
+
+
+
+
+void ChasingDogo::draw(RenderWindow& window, Grid& grid) {
+    window.draw(shape);
+
+    // 🔥 Dessine le chemin suivi par le Dogo en JAUNE
+    for (auto& pos : debugPath) {
+        if (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT) {
+            RectangleShape debugCell(Vector2f(CELL_SIZE, CELL_SIZE));
+            debugCell.setPosition(pos.x * CELL_SIZE, pos.y * CELL_SIZE);
+            debugCell.setFillColor(Color::Yellow);
+            debugCell.setOutlineThickness(1);
+            debugCell.setOutlineColor(Color::Black);
+            window.draw(debugCell);
+        }
     }
 }
 
-void EnemyDogo::computePathToPlayer() {
-    if (!entityManager) return;
-
-    sf::Vector2i start(
+void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
+    Vector2i start(
         static_cast<int>(shape.getPosition().x / CELL_SIZE),
         static_cast<int>(shape.getPosition().y / CELL_SIZE)
     );
-
-    sf::Vector2i end(
-        static_cast<int>(lastKnownPosition.x / CELL_SIZE),
-        static_cast<int>(lastKnownPosition.y / CELL_SIZE)
+    Vector2i end(
+        static_cast<int>(playerPos.x / CELL_SIZE),
+        static_cast<int>(playerPos.y / CELL_SIZE)
     );
 
-    Grid& grid = entityManager->getGrid();
-    std::queue<sf::Vector2i> openSet;
-    std::map<sf::Vector2i, sf::Vector2i, Vector2iComparator> cameFrom;
-    std::vector<sf::Vector2i> path;
+    if (!grid.isWalkable(end.x, end.y)) {
+        cout << "🚨 Destination bloquée, recalcul impossible !" << endl;
+        return;
+    }
 
-    openSet.push(start);
+    struct Node {
+        Vector2i pos;
+        float cost;
+        float heuristic;
+        bool operator>(const Node& other) const {
+            return (cost + heuristic) > (other.cost + other.heuristic);
+        }
+    };
+
+    priority_queue<Node, vector<Node>, greater<Node>> openSet;
+    map<Vector2i, Vector2i, Vector2iComparator> cameFrom;
+    map<Vector2i, float, Vector2iComparator> costSoFar;
+    vector<Vector2i> path;
+
+    openSet.push({ start, 0, static_cast<float>(abs(start.x - end.x) + abs(start.y - end.y)) });
     cameFrom[start] = start;
+    costSoFar[start] = 0;
 
-    // 📌 Directions (haut, bas, gauche, droite, et diagonales)
-    std::vector<sf::Vector2i> directions = {
-        {0, -1}, {0, 1}, {-1, 0}, {1, 0},  // Haut, Bas, Gauche, Droite
-        {-1, -1}, {1, -1}, {-1, 1}, {1, 1} // Diagonales
+    vector<Vector2i> directions = {
+        {0, -1}, {0, 1}, {-1, 0}, {1, 0},
+        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
     };
 
     while (!openSet.empty()) {
-        sf::Vector2i current = openSet.front();
+        Node current = openSet.top();
         openSet.pop();
 
-        // 📌 Si on a trouvé la cible, on reconstruit le chemin
-        if (current == end) {
-            while (current != start) {
-                path.push_back(current);
-                current = cameFrom[current];
+        if (current.pos == end) {
+            while (current.pos != start) {
+                path.push_back(current.pos);
+                current.pos = cameFrom[current.pos];
             }
-            std::reverse(path.begin(), path.end());
+            reverse(path.begin(), path.end());
 
-            // 📌 Convertir le chemin en file d'attente utilisable par le Dogo
-            pathToPlayer = std::queue<sf::Vector2f>();
+            pathToPlayer = queue<Vector2f>();
+            grid.debugPath.clear();
+
+            cout << "🟡 Nouveau chemin : ";
             for (const auto& pos : path) {
-                pathToPlayer.push(sf::Vector2f(pos.x * CELL_SIZE, pos.y * CELL_SIZE));
+                pathToPlayer.push(Vector2f(pos.x * CELL_SIZE, pos.y * CELL_SIZE));
+                if (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT) {
+                    grid.debugPath.push_back(pos);
+                }
+                cout << "(" << pos.x << "," << pos.y << ") ";
             }
+            cout << endl;
             return;
         }
 
-        // 📌 Explorer les voisins
         for (const auto& dir : directions) {
-            sf::Vector2i neighbor = current + dir;
+            Vector2i neighbor = current.pos + dir;
 
-            if (grid.isWalkable(neighbor.x, neighbor.y) && cameFrom.find(neighbor) == cameFrom.end()) {
-                openSet.push(neighbor);
-                cameFrom[neighbor] = current;
+            if (!grid.isWalkable(neighbor.x, neighbor.y)) continue;
+
+            float newCost = costSoFar[current.pos] + 1;
+            if (costSoFar.find(neighbor) == costSoFar.end() || newCost < costSoFar[neighbor]) {
+                costSoFar[neighbor] = newCost;
+                float priority = newCost + static_cast<float>(abs(neighbor.x - end.x) + abs(neighbor.y - end.y));
+                openSet.push({ neighbor, newCost, priority });
+                cameFrom[neighbor] = current.pos;
             }
         }
     }
-
-    // 📌 Aucun chemin trouvé : vider le path
-    pathToPlayer = std::queue<sf::Vector2f>();
 }
 
 
-
-bool ChasePlayerD::CanExecute(const EnemyDogo& state) {
-    return state.playerDetected || !state.atTargetPosition();
-}
-
-void ChasePlayerD::Execute(EnemyDogo& state) {
-    cout << "Dogo moving along BFS path\n";
-
-    if (state.pathToPlayer.empty()) {
-        state.computePathToPlayer(); // Recalculer un chemin s'il n'y en a pas
-    }
-
-    if (!state.pathToPlayer.empty()) {
-        sf::Vector2f nextPos = state.pathToPlayer.front();
-        sf::Vector2f direction = nextPos - state.shape.getPosition();
-        float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
-
-        if (magnitude < 5.0f) {
-            state.pathToPlayer.pop();
-            return;
-        }
-
-        direction /= magnitude;
-        state.rotateTowards(direction);
-
-        // 📌 Vérifier la future position pour éviter les murs
-        sf::Vector2f newPos = state.shape.getPosition() + (direction * state.SPEED * state.deltaTime);
-        sf::FloatRect futureBounds = state.shape.getGlobalBounds();
-        futureBounds.left = newPos.x;
-        futureBounds.top = newPos.y;
-
-        Grid& grid = state.entityManager->getGrid();
-        sf::Vector2i checkPos(static_cast<int>(futureBounds.left / CELL_SIZE), static_cast<int>(futureBounds.top / CELL_SIZE));
-
-        if (grid.isWalkable(checkPos.x, checkPos.y)) {
-            state.shape.setPosition(newPos);
-        }
-        else {
-            cout << "🚧 Dogo bloqué, recalcul du chemin\n";
-            state.computePathToPlayer();
-        }
-    }
-}
-
-
-
-vector<ActionD*> GOAPPlannerD::Plan(const EnemyDogo& initialState, Goal goal) {
-    vector<ActionD*> plan;
-
-    if (goal == Goal::Chasing) {
-        plan.push_back(new ChasePlayerD());
-    }
-    else if (goal == Goal::Patrolling) {
-        plan.push_back(new ChasePlayerD());  // Ajoute d'autres actions ici si nécessaire
-    }
-
-    return plan;
-}
-
-void EnemyDogo::rotateTowards(const sf::Vector2f& direction) {
-    if (direction.x != 0 || direction.y != 0) {
-        float targetAngle = atan2(direction.y, direction.x) * (180.0f / 3.14159265358979323846f);
-        float angleDifference = targetAngle - enemyAngle;
-
-        if (angleDifference > 180.0f) angleDifference -= 360.0f;
-        if (angleDifference < -180.0f) angleDifference += 360.0f;
-
-        float rotationStep = maxRotationSpeed * deltaTime;
-        if (fabs(angleDifference) <= rotationStep) {
-            enemyAngle = targetAngle;
-        }
-        else {
-            enemyAngle += (angleDifference > 0 ? 1 : -1) * rotationStep;
-        }
-    }
-}
-
-void EnemyDogo::setAtTargetPosition(bool value) {
-    atTarget = value;
-}
-
-bool EnemyDogo::atTargetPosition() const {
-    return atTarget;
-}
-
-void EnemyDogo::reset() {
-    playerDetected = false;
-    atTarget = false;
-}
-
-void EnemyDogo::alertEnemies(Vector2f targetpos) {
-    if (!entityManager) return;
-
-    cout << "Dogo Alert! Enemies notified!\n";
-    for (auto& enemy : entityManager->getEnemies()) {
-        enemy->setWarning(true, targetpos);
-    }
-}
-
-void EnemyDogo::desalertEnemies(Vector2f targetpos) {
-    if (!entityManager) return;
-
-    for (auto& enemy : entityManager->getEnemies()) {
-        enemy->setWarning(false, targetpos);
-    }
-}

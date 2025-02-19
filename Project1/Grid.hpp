@@ -26,7 +26,7 @@ public:
     Cell& getCell(int x, int y);
     bool isWalkable(int x, int y) const;
     vector<Vector2i> getNeighbors(int x, int y) const;
-
+    vector<Vector2i> debugPath;
 private:
     vector<vector<Cell>> cells;
 };

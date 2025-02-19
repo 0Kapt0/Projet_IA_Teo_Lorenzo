@@ -1,4 +1,4 @@
-#ifndef PLAYER_HPP
+﻿#ifndef PLAYER_HPP
 #define PLAYER_HPP
 
 #include "Entity.hpp"
@@ -11,6 +11,7 @@ public:
     void update(float deltaTime, Grid& grid) override;
     bool getIsRunning();
     vector<Cookie> cookies;
+    sf::Vector2f getPosition() const { return shape.getPosition(); }
 private:
     bool isRunning = false;
 };

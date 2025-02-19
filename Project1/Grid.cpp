@@ -1,4 +1,4 @@
-#include "Grid.hpp"
+﻿#include "Grid.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -41,20 +41,37 @@ void Grid::loadFromFile(const string& filename) {
 void Grid::draw(RenderWindow& window) {
     for (int y = 0; y < GRID_HEIGHT; ++y) {
         for (int x = 0; x < GRID_WIDTH; ++x) {
+            if (!cells[y][x].walkable) {
+                cells[y][x].shape.setFillColor(Color::White);
+            }
+            else {
+                cells[y][x].shape.setFillColor(Color::Transparent);
+            }
             window.draw(cells[y][x].shape);
         }
     }
+
+    //Dessine le chemin suivi par le Dogo en JAUNE
+    for (const auto& pos : debugPath) {
+        if (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT) {
+            cells[pos.y][pos.x].shape.setFillColor(Color::Yellow);
+            window.draw(cells[pos.y][pos.x].shape);
+        }
+    }
 }
+
+
 
 Cell& Grid::getCell(int x, int y) {
     if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
         return cells[y][x];
     }
-    throw out_of_range("Coordonn�es en dehors de la grille");
+    throw out_of_range("Coordonnées en dehors de la grille");
 }
 
 bool Grid::isWalkable(int x, int y) const {
-    return (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) && cells[y][x].walkable;
+    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
+    return cells[y][x].walkable;
 }
 
 vector<Vector2i> Grid::getNeighbors(int x, int y) const {

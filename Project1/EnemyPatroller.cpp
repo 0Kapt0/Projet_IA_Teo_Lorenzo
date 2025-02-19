@@ -63,7 +63,7 @@ void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
         lookAroundTime = 0.0f;
         setAtTargetPosition(false);
         shape.setFillColor(Color::Blue);
-        cout << "EnemyPatroller alerted!\n";
+        /*cout << "EnemyPatroller alerted!\n"*/;
 
     }
     if (!alert) {
@@ -209,7 +209,7 @@ bool ChasePlayer::CanExecute(const EnemyPatroller& state) {
 }
 
 void ChasePlayer::Execute(EnemyPatroller& state) {
-    cout << "Chasing player\n";
+    /*cout << "Chasing player\n";*/
     Vector2f direction = state.targetpos - state.shape.getPosition();
     float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
     if (magnitude > 5.0f) {
@@ -228,10 +228,10 @@ bool LookAround::CanExecute(const EnemyPatroller& state) {
 }
 
 void LookAround::Execute(EnemyPatroller& state) {
-    cout << "Looking around\n";
+   /* cout << "Looking around\n"*/;
     
     if (state.playerDetected) {
-        cout << "Player detected during LookAround, switching to Chase\n";
+        /*cout << "Player detected during LookAround, switching to Chase\n"*/;
         state.lookAroundTime = 0.0f;
         state.warning = true;
         state.setAtTargetPosition(false);
@@ -258,7 +258,7 @@ bool Patrol::CanExecute(const EnemyPatroller& state) {
 }
 
 void Patrol::Execute(EnemyPatroller& state) {
-    cout << "Patrolling\n";
+    /*cout << "Patrolling\n"*/;
     state.Patrolling();
 }
 
