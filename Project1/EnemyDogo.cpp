@@ -25,10 +25,10 @@ ChasingDogo::ChasingDogo(float x, float y) {
 
 void ChasingDogo::update(float deltaTime, Grid& grid, Player& player, EntityManager& entityManager) {
     if (player.getIsRunning()) {
-        lastRunningPosition = player.getPosition(); // Mise à jour uniquement si le joueur sprinte
+        lastRunningPosition = player.getPosition();
     }
 
-    computePathToPlayer(grid, lastRunningPosition); // Toujours suivre la dernière position connue du sprint
+    computePathToPlayer(grid, lastRunningPosition);
 
     frameCounter++;
 
@@ -40,7 +40,7 @@ void ChasingDogo::update(float deltaTime, Grid& grid, Player& player, EntityMana
 }
 
 void ChasingDogo::moveTowardsTarget(float deltaTime) {
-    if (pathToPlayer.empty()) return; // Assurer que le Dogo ne bouge pas si aucun chemin n'est disponible
+    if (pathToPlayer.empty()) return;
 
     Vector2f currentPos = shape.getPosition();
     Vector2f targetPos = pathToPlayer.front();
@@ -66,13 +66,12 @@ void ChasingDogo::moveTowardsTarget(float deltaTime) {
 
     shape.move(direction * moveStep);
 
-    // Rotation du Dogo vers la direction du mouvement
     float angle = atan2(direction.y, direction.x) * 180 / M_PI;
     shape.setRotation(angle);
 }
 
 float ChasingDogo::adjustSpeedForTurn(Vector2f currentPos, float moveStep) {
-    if (pathToPlayer.empty()) return moveStep; // Vérification supplémentaire
+    if (pathToPlayer.empty()) return moveStep;
 
     Vector2f nextPos = pathToPlayer.front();
     bool isTurning = (abs(nextPos.x - currentPos.x) > 0 && abs(nextPos.y - currentPos.y) > 0);
@@ -141,8 +140,8 @@ void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
     costSoFar[start] = 0;
 
     vector<Vector2i> directions = {
-        {0, -1}, {0, 1}, {-1, 0}, {1, 0},   // Droite, Gauche, Haut, Bas
-        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}  // Diagonales
+        {0, -1}, {0, 1}, {-1, 0}, {1, 0},
+        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
     };
 
     while (!openSet.empty()) {
