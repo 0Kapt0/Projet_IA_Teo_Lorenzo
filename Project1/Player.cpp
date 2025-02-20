@@ -44,7 +44,7 @@ void Player::update(float deltaTime, Grid& grid) {
     }
 }
 
-void Player::cookieupdate(RenderWindow& window){
+void Player::cookiedraw(RenderWindow& window){
     for (auto& cookie : cookies)
     {
         window.draw(cookie->shape);

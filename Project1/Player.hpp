@@ -10,7 +10,7 @@ public:
     Player(float x, float y);
     void update(float deltaTime, Grid& grid) override;
     bool getIsRunning();
-    void cookieupdate(RenderWindow& window);
+    void cookiedraw(RenderWindow& window);
     vector<unique_ptr<Cookie>> cookies;    
     Vector2f getPosition() const { return shape.getPosition(); }
 private:
