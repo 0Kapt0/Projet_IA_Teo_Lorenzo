@@ -4,28 +4,33 @@
 #include <iostream>
 #include <queue>
 #include <cmath>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace sf;
 using namespace std;
 
 ChasingDogo::ChasingDogo(float x, float y) {
-    shape.setSize(Vector2f(30.0f, 30.0f));
-    shape.setFillColor(Color::Red);
+    if (!dogoTexture.loadFromFile("assets/texture/DOGO.png")) {
+        cerr << "Erreur chargement TEXTURE de la camera !" << endl;
+    }
+
+    shape.setTexture(&dogoTexture);
+    shape.setSize(Vector2f(70.0f, 70.0f));
     shape.setPosition(x, y);
     lastPosition = shape.getPosition();
+    lastRunningPosition = shape.getPosition();
     shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
 }
 
 void ChasingDogo::update(float deltaTime, Grid& grid, Player& player, EntityManager& entityManager) {
-    if (!player.getIsRunning()) {
-        return;
+    if (player.getIsRunning()) {
+        lastRunningPosition = player.getPosition(); // Mise à jour uniquement si le joueur sprinte
     }
+
+    computePathToPlayer(grid, lastRunningPosition); // Toujours suivre la dernière position connue du sprint
 
     frameCounter++;
-
-    if (frameCounter % 30 == 0 || pathToPlayer.empty()) {
-        computePathToPlayer(grid, player.getPosition());
-    }
 
     if (!pathToPlayer.empty()) {
         moveTowardsTarget(deltaTime);
@@ -35,6 +40,8 @@ void ChasingDogo::update(float deltaTime, Grid& grid, Player& player, EntityMana
 }
 
 void ChasingDogo::moveTowardsTarget(float deltaTime) {
+    if (pathToPlayer.empty()) return; // Assurer que le Dogo ne bouge pas si aucun chemin n'est disponible
+
     Vector2f currentPos = shape.getPosition();
     Vector2f targetPos = pathToPlayer.front();
 
@@ -58,9 +65,15 @@ void ChasingDogo::moveTowardsTarget(float deltaTime) {
     }
 
     shape.move(direction * moveStep);
+
+    // Rotation du Dogo vers la direction du mouvement
+    float angle = atan2(direction.y, direction.x) * 180 / M_PI;
+    shape.setRotation(angle);
 }
 
 float ChasingDogo::adjustSpeedForTurn(Vector2f currentPos, float moveStep) {
+    if (pathToPlayer.empty()) return moveStep; // Vérification supplémentaire
+
     Vector2f nextPos = pathToPlayer.front();
     bool isTurning = (abs(nextPos.x - currentPos.x) > 0 && abs(nextPos.y - currentPos.y) > 0);
 
