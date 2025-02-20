@@ -22,9 +22,9 @@ void Player::update(float deltaTime, Grid& grid) {
         SPEED = 200.f;
         isRunning = false;
     }
-    if (Keyboard::isKeyPressed(Keyboard::E)) {
+    if (Keyboard::isKeyPressed(Keyboard::Space)) {
 
-
+        cookies.push_back(make_unique<Cookie>(shape.getPosition().x, shape.getPosition().y));
     }
     Vector2f newPosition = shape.getPosition() + movement;
     FloatRect newBounds(newPosition, shape.getSize());
@@ -41,6 +41,13 @@ void Player::update(float deltaTime, Grid& grid) {
         isWalkable(newBounds.left, newBounds.top + newBounds.height - 1) &&
         isWalkable(newBounds.left + newBounds.width - 1, newBounds.top + newBounds.height - 1)) {
         shape.move(movement);
+    }
+}
+
+void Player::cookieupdate(RenderWindow& window){
+    for (auto& cookie : cookies)
+    {
+        window.draw(cookie->shape);
     }
 }
 

@@ -86,6 +86,7 @@ void EntityManager::draw(sf::RenderWindow& window, Grid& grid) {
 
     if (player) {
         window.draw(player->shape);
+        player->cookieupdate(window);
     }
     for (auto& enemy : enemies) {
         enemy->drawViewCone(window, grid);
