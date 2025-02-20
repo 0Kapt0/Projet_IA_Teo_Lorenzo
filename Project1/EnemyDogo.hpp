@@ -22,11 +22,10 @@ public:
     void draw(sf::RenderWindow& window, Grid& grid);
     void computePathToPlayer(Grid& grid, const sf::Vector2f& playerPos);
     sf::RectangleShape getShape() const { return shape; }
-    void alignToGrid();
 private:
     sf::RectangleShape shape;
     std::queue<sf::Vector2f> pathToPlayer;
-    float speed = 60.0f;
+    float speed = 160.0f;
     std::vector<sf::Vector2i> debugPath;
 
     sf::Vector2f lastPosition;

@@ -72,8 +72,23 @@ Cell& Grid::getCell(int x, int y) {
 bool Grid::isWalkable(int x, int y) const {
     if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
 
-    return cells[round(y)][round(x)].walkable;
+    // ✅ Vérifie que la cellule est traversable
+    if (!cells[y][x].walkable) return false;
+
+    // ✅ Vérifie que la cellule voisine en diagonale ne bloque pas un passage
+    bool left = (x > 0) ? cells[y][x - 1].walkable : false;
+    bool right = (x < GRID_WIDTH - 1) ? cells[y][x + 1].walkable : false;
+    bool top = (y > 0) ? cells[y - 1][x].walkable : false;
+    bool bottom = (y < GRID_HEIGHT - 1) ? cells[y + 1][x].walkable : false;
+
+    if (!left && !top) return false;  // Bloqué en haut-gauche ?
+    if (!right && !top) return false; // Bloqué en haut-droite ?
+    if (!left && !bottom) return false; // Bloqué en bas-gauche ?
+    if (!right && !bottom) return false; // Bloqué en bas-droite ?
+
+    return true;
 }
+
 
 
 
