@@ -8,7 +8,6 @@ public:
 
     Cookie(float x, float y);
     void update(float deltaTime, Grid& grid) override;
-
 };
 
 #endif

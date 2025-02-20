@@ -44,6 +44,13 @@ void Player::update(float deltaTime, Grid& grid) {
     }
 }
 
+void Player::cookieupdate(RenderWindow& window){
+    for (auto& cookie : cookies)
+    {
+        window.draw(cookie->shape);
+    }
+}
+
 bool Player::getIsRunning() {
     return isRunning;
 }
