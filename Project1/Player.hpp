@@ -13,6 +13,7 @@ public:
     void cookiedraw(RenderWindow& window);
     vector<unique_ptr<Cookie>> cookies;    
     Vector2f getPosition() const { return shape.getPosition(); }
+    RectangleShape getShape() const { return shape; }
 private:
     bool isRunning = false;
 };

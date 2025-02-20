@@ -5,9 +5,12 @@
 #include <queue>
 #include <vector>
 #include <map>
+#include "EnemyPatroller.hpp"
+#include "EntityManager.hpp"
 
 class Grid;
 class Player;
+class EntityManager;
 
 struct Vector2iComparator {
     bool operator()(const sf::Vector2i& a, const sf::Vector2i& b) const {
@@ -18,11 +21,17 @@ struct Vector2iComparator {
 class ChasingDogo {
 public:
     ChasingDogo(float x, float y);
-    void update(float deltaTime, Grid& grid, Player& player);
+    void update(float deltaTime, Grid& grid, Player& player, EntityManager& entityManager);
     void draw(sf::RenderWindow& window, Grid& grid);
     void computePathToPlayer(Grid& grid, const sf::Vector2f& playerPos);
+
     sf::RectangleShape getShape() const { return shape; }
+
 private:
+    void moveTowardsTarget(float deltaTime);
+    float adjustSpeedForTurn(sf::Vector2f currentPos, float moveStep);
+    void checkCollisionWithPlayer(Player& player, EntityManager& entityManager);
+
     sf::RectangleShape shape;
     std::queue<sf::Vector2f> pathToPlayer;
     float speed = 160.0f;
@@ -30,7 +39,7 @@ private:
 
     sf::Vector2f lastPosition;
     int stuckCounter = 0;
-    int frameCounter = 0;  // 🔄 Permet de recalculer le chemin régulièrement
+    int frameCounter = 0;
 };
 
 #endif // CHASING_DOGO_HPP

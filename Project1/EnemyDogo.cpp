@@ -16,44 +16,28 @@ ChasingDogo::ChasingDogo(float x, float y) {
     shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
 }
 
-void ChasingDogo::update(float deltaTime, Grid& grid, Player& player) {
+void ChasingDogo::update(float deltaTime, Grid& grid, Player& player, EntityManager& entityManager) {
+    if (!player.getIsRunning()) {
+        return;
+    }
+
     frameCounter++;
 
-    // 🔄 Recalcule le chemin toutes les 30 frames ou si la file est vide
     if (frameCounter % 30 == 0 || pathToPlayer.empty()) {
         computePathToPlayer(grid, player.getPosition());
     }
 
-    if (pathToPlayer.empty()) return;
+    if (!pathToPlayer.empty()) {
+        moveTowardsTarget(deltaTime);
+    }
 
-    // ✅ Position actuelle
+    checkCollisionWithPlayer(player, entityManager);
+}
+
+void ChasingDogo::moveTowardsTarget(float deltaTime) {
     Vector2f currentPos = shape.getPosition();
     Vector2f targetPos = pathToPlayer.front();
 
-    // ✅ Vérification de l'angle
-    if (pathToPlayer.size() >= 2) {
-        Vector2f nextTarget = pathToPlayer.back();
-
-        Vector2f currentDir = targetPos - currentPos;
-        Vector2f nextDir = nextTarget - targetPos;
-
-        if (currentDir.x != 0) currentDir.x /= abs(currentDir.x);
-        if (currentDir.y != 0) currentDir.y /= abs(currentDir.y);
-        if (nextDir.x != 0) nextDir.x /= abs(nextDir.x);
-        if (nextDir.y != 0) nextDir.y /= abs(nextDir.y);
-
-        if ((currentDir.x != nextDir.x && currentDir.y != nextDir.y) && (nextDir.x != 0 || nextDir.y != 0)) {
-            // 🔴 Forcer un mouvement en ligne droite avant le virage
-            if (currentDir.x != 0) {
-                targetPos.y = currentPos.y;  // Bouge uniquement en X
-            }
-            else {
-                targetPos.x = currentPos.x;  // Bouge uniquement en Y
-            }
-        }
-    }
-
-    // ✅ Déplacement fluide
     Vector2f direction = targetPos - currentPos;
     float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
 
@@ -63,20 +47,41 @@ void ChasingDogo::update(float deltaTime, Grid& grid, Player& player) {
 
     float moveStep = speed * deltaTime;
 
-    // ✅ Vérification si on est très proche, alors on snap au centre
     if (distance < moveStep) {
         shape.setPosition(targetPos);
         pathToPlayer.pop();
+        return;
     }
-    else {
-        shape.move(direction * moveStep);
+
+    if (!pathToPlayer.empty()) {
+        moveStep = adjustSpeedForTurn(currentPos, moveStep);
+    }
+
+    shape.move(direction * moveStep);
+}
+
+float ChasingDogo::adjustSpeedForTurn(Vector2f currentPos, float moveStep) {
+    Vector2f nextPos = pathToPlayer.front();
+    bool isTurning = (abs(nextPos.x - currentPos.x) > 0 && abs(nextPos.y - currentPos.y) > 0);
+
+    if (isTurning) {
+        return moveStep * 0.8f;
+    }
+
+    return moveStep;
+}
+
+void ChasingDogo::checkCollisionWithPlayer(Player& player, EntityManager& entityManager) {
+    if (shape.getGlobalBounds().intersects(player.getShape().getGlobalBounds())) {
+        for (auto& enemy : entityManager.getEnemies()) {
+            enemy->setWarning(true, player.getPosition());
+        }
     }
 }
 
 void ChasingDogo::draw(RenderWindow& window, Grid& grid) {
     window.draw(shape);
 
-    // 🔥 Dessine le chemin suivi par le Dogo en JAUNE
     for (auto& pos : debugPath) {
         if (pos.x >= 0 && pos.x < GRID_WIDTH && pos.y >= 0 && pos.y < GRID_HEIGHT) {
             RectangleShape debugCell(Vector2f(CELL_SIZE, CELL_SIZE));
