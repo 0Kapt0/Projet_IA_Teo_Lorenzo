@@ -1,5 +1,7 @@
-#include "EnemyPatroller.hpp"
+﻿#include "EnemyPatroller.hpp"
 #include <cmath>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace sf;
 using namespace std;
@@ -19,6 +21,14 @@ EnemyPatroller::EnemyPatroller(float x, float y, Vector2f point1, Vector2f point
 void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     this->deltaTime = deltaTime;
     shape.setRotation(enemyAngle);
+
+    if (playerDetected) {
+        computePathToPlayer(grid, player.getPosition());
+    }
+
+    if (!pathToPlayer.empty()) {
+        moveTowardsTarget(deltaTime);
+    }
 
     VertexArray cone = getViewConeShape(grid);
     FloatRect playerBounds = player.shape.getGlobalBounds();
@@ -55,6 +65,109 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
         }
     }
 }
+
+void EnemyPatroller::moveTowardsTarget(float deltaTime) {
+    if (pathToPlayer.empty()) return;
+
+    Vector2f currentPos = shape.getPosition();
+    Vector2f targetPos = pathToPlayer.front();
+
+    Vector2f direction = targetPos - currentPos;
+    float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    if (distance > 0) {
+        direction /= distance;
+    }
+
+    float moveStep = SPEED * deltaTime;
+
+    if (distance < moveStep) {
+        shape.setPosition(targetPos);
+        pathToPlayer.pop();
+        return;
+    }
+
+    shape.move(direction * moveStep);
+    float angle = atan2(direction.y, direction.x) * 180 / M_PI;
+    shape.setRotation(angle);
+}
+
+void EnemyPatroller::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
+    Vector2i start(
+        static_cast<int>(shape.getPosition().x / CELL_SIZE),
+        static_cast<int>(shape.getPosition().y / CELL_SIZE)
+    );
+    Vector2i end(
+        static_cast<int>(playerPos.x / CELL_SIZE),
+        static_cast<int>(playerPos.y / CELL_SIZE)
+    );
+
+    if (!grid.isWalkable(end.x, end.y)) {
+        cout << "🚨 Destination bloquée, recalcul impossible !" << endl;
+        return;
+    }
+
+    struct Node {
+        Vector2i pos;
+        float cost;
+        float heuristic;
+        bool operator>(const Node& other) const {
+            return (cost + heuristic) > (other.cost + other.heuristic);
+        }
+    };
+
+    priority_queue<Node, vector<Node>, greater<Node>> openSet;
+    map<Vector2i, Vector2i, Vector2iComparator> cameFrom;
+    map<Vector2i, float, Vector2iComparator> costSoFar;
+    vector<Vector2i> path;
+
+    openSet.push({ start, 0, static_cast<float>(abs(start.x - end.x) + abs(start.y - end.y)) });
+    cameFrom[start] = start;
+    costSoFar[start] = 0;
+
+    vector<Vector2i> directions = {
+        {0, -1}, {0, 1}, {-1, 0}, {1, 0},
+        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
+    };
+
+    while (!openSet.empty()) {
+        Node current = openSet.top();
+        openSet.pop();
+
+        if (current.pos == end) {
+            while (current.pos != start) {
+                path.push_back(current.pos);
+                current.pos = cameFrom[current.pos];
+            }
+            reverse(path.begin(), path.end());
+
+            pathToPlayer = queue<Vector2f>();
+            for (const auto& pos : path) {
+                Vector2f alignedPos(
+                    (pos.x * CELL_SIZE) + (CELL_SIZE / 2),
+                    (pos.y * CELL_SIZE) + (CELL_SIZE / 2)
+                );
+                pathToPlayer.push(alignedPos);
+            }
+            return;
+        }
+
+        for (const auto& dir : directions) {
+            Vector2i neighbor = current.pos + dir;
+
+            if (!grid.isWalkable(neighbor.x, neighbor.y)) continue;
+
+            float newCost = costSoFar[current.pos] + 1;
+            if (costSoFar.find(neighbor) == costSoFar.end() || newCost < costSoFar[neighbor]) {
+                costSoFar[neighbor] = newCost;
+                float priority = newCost + static_cast<float>(abs(neighbor.x - end.x) + abs(neighbor.y - end.y));
+                openSet.push({ neighbor, newCost, priority });
+                cameFrom[neighbor] = current.pos;
+            }
+        }
+    }
+}
+
 
 void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
     if (alert) {
@@ -155,7 +268,7 @@ void EnemyPatroller::rotateTowards(const Vector2f& direction) {
         // Calcul de l'angle cible
         float targetAngle = atan2(direction.y, direction.x) * (180.0f / 3.14159265358979323846f);
 
-        // Normalisation des angles pour �viter des sauts brusques
+        // Normalisation des angles pour éviter des sauts brusques
         float angleDifference = targetAngle - enemyAngle;
         if (angleDifference > 180.0f) angleDifference -= 360.0f;
         if (angleDifference < -180.0f) angleDifference += 360.0f;
@@ -193,10 +306,10 @@ void EnemyPatroller::Patrolling() {
         etape = (etape % 3) + 1;
     }
     else {
-        // Normaliser la direction et d�placer l'ennemi
+        // Normaliser la direction et déplacer l'ennemi
         direction /= magnitude;
         rotateTowards(direction); // Tourner vers la cible
-        shape.move(direction * SPEED * deltaTime); // D�placement de l'ennemi
+        shape.move(direction * SPEED * deltaTime); // Déplacement de l'ennemi
     }
 }
 

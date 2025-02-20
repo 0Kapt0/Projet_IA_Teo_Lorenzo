@@ -8,6 +8,8 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
+#include <queue>
+#include <map>
 
 using namespace sf;
 using namespace std;
@@ -17,6 +19,12 @@ enum class Goal {
     Chasing,
     LostIt,
     Searching
+};
+
+struct Vector2iComparator {
+    bool operator()(const Vector2i& a, const Vector2i& b) const {
+        return std::tie(a.x, a.y) < std::tie(b.x, b.y);
+    }
 };
 
 class EnemyPatroller : public Enemy {
@@ -41,9 +49,14 @@ public:
     bool warning = false;
     float maxRotationSpeed = 90.0f;
     float deltaTime;
-
+    void computePathToPlayer(Grid& grid, const Vector2f& targetPos);
     void setWarning(bool alert, Vector2f targetpos);
 private:
+    void moveTowardsTarget(float deltaTime);
+    std::queue<Vector2f> pathToPlayer;
+    float speed = 160.0f;
+    std::vector<Vector2i> debugPath;
+
     Texture enemyTexture;
     int etape = 1;
     bool atTarget = false;

@@ -12,11 +12,11 @@ class Grid;
 class Player;
 class EntityManager;
 
-struct Vector2iComparator {
-    bool operator()(const Vector2i& a, const Vector2i& b) const {
-        return std::tie(a.x, a.y) < std::tie(b.x, b.y);
-    }
-};
+//struct Vector2iComparator {
+//    bool operator()(const Vector2i& a, const Vector2i& b) const {
+//        return std::tie(a.x, a.y) < std::tie(b.x, b.y);
+//    }
+//};
 
 class ChasingDogo {
 public:
