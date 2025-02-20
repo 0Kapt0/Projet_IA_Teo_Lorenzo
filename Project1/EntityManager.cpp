@@ -68,8 +68,7 @@ void EntityManager::update(float deltaTime, Grid& grid) {
             static_cast<int>(dogo->getShape().getPosition().y / CELL_SIZE)
         );
 
-
-        dogo->update(deltaTime, grid, *player);
+        dogo->update(deltaTime, grid, *player, *this);
 
         dogo->computePathToPlayer(grid, player->getPosition());
     }

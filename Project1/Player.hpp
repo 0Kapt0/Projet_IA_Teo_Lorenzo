@@ -11,7 +11,8 @@ public:
     void update(float deltaTime, Grid& grid) override;
     bool getIsRunning();
     vector<Cookie> cookies;
-    sf::Vector2f getPosition() const { return shape.getPosition(); }
+    Vector2f getPosition() const { return shape.getPosition(); }
+    RectangleShape getShape() const { return shape; }
 private:
     bool isRunning = false;
 };
