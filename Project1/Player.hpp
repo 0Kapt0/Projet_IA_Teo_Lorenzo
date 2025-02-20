@@ -10,8 +10,8 @@ public:
     Player(float x, float y);
     void update(float deltaTime, Grid& grid) override;
     bool getIsRunning();
-    vector<Cookie> cookies;
-    sf::Vector2f getPosition() const { return shape.getPosition(); }
+    vector<unique_ptr<Cookie>> cookies;    
+    Vector2f getPosition() const { return shape.getPosition(); }
 private:
     bool isRunning = false;
 };
