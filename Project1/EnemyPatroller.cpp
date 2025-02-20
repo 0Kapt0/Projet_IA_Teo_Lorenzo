@@ -22,8 +22,10 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     this->deltaTime = deltaTime;
     shape.setRotation(enemyAngle);
 
-    if (playerDetected) {
-        computePathToPlayer(grid, player.getPosition());
+    if (playerDetected || warning) {
+        computePathToTarget(grid, targetpos);
+    } else {
+        Patrolling(grid);
     }
 
     if (!pathToPlayer.empty()) {
@@ -60,7 +62,7 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
 
     for (Action* action : actions) {
         if (action->CanExecute(*this)) {
-            action->Execute(*this);
+            action->Execute(*this, grid);
             break;
         }
     }
@@ -92,14 +94,14 @@ void EnemyPatroller::moveTowardsTarget(float deltaTime) {
     shape.setRotation(angle);
 }
 
-void EnemyPatroller::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
+void EnemyPatroller::computePathToTarget(Grid& grid, const Vector2f& targetPos) {
     Vector2i start(
         static_cast<int>(shape.getPosition().x / CELL_SIZE),
         static_cast<int>(shape.getPosition().y / CELL_SIZE)
     );
     Vector2i end(
-        static_cast<int>(playerPos.x / CELL_SIZE),
-        static_cast<int>(playerPos.y / CELL_SIZE)
+        static_cast<int>(targetPos.x / CELL_SIZE),
+        static_cast<int>(targetPos.y / CELL_SIZE)
     );
 
     if (!grid.isWalkable(end.x, end.y)) {
@@ -284,7 +286,7 @@ void EnemyPatroller::rotateTowards(const Vector2f& direction) {
     }
 }
 
-void EnemyPatroller::Patrolling() {
+void EnemyPatroller::Patrolling(Grid& grid) {
     Vector2f target;
     switch (etape) {
     case 1:
@@ -300,17 +302,7 @@ void EnemyPatroller::Patrolling() {
         return;
     }
 
-    Vector2f direction = target - shape.getPosition();
-    float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
-    if (magnitude <= 5.0f) {
-        etape = (etape % 3) + 1;
-    }
-    else {
-        // Normaliser la direction et déplacer l'ennemi
-        direction /= magnitude;
-        rotateTowards(direction); // Tourner vers la cible
-        shape.move(direction * SPEED * deltaTime); // Déplacement de l'ennemi
-    }
+    computePathToTarget(grid, target);
 }
 
 
@@ -321,14 +313,13 @@ bool ChasePlayer::CanExecute(const EnemyPatroller& state) {
     return state.warning && !state.atTargetPosition();
 }
 
-void ChasePlayer::Execute(EnemyPatroller& state) {
+void ChasePlayer::Execute(EnemyPatroller& state, Grid& grid) {
     /*cout << "Chasing player\n";*/
     Vector2f direction = state.targetpos - state.shape.getPosition();
     float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
     if (magnitude > 5.0f) {
         direction /= magnitude;
         state.rotateTowards(direction);
-        state.shape.move(direction * state.SPEED * state.deltaTime);
     }
     else {
         state.setAtTargetPosition(true);
@@ -340,7 +331,7 @@ bool LookAround::CanExecute(const EnemyPatroller& state) {
     return state.warning && state.atTargetPosition();
 }
 
-void LookAround::Execute(EnemyPatroller& state) {
+void LookAround::Execute(EnemyPatroller& state, Grid& grid) {
    /* cout << "Looking around\n"*/;
     
     if (state.playerDetected) {
@@ -370,9 +361,8 @@ bool Patrol::CanExecute(const EnemyPatroller& state) {
     return true;
 }
 
-void Patrol::Execute(EnemyPatroller& state) {
-    /*cout << "Patrolling\n"*/;
-    state.Patrolling();
+void Patrol::Execute(EnemyPatroller& state, Grid& grid) {
+    state.Patrolling(grid);
 }
 
 

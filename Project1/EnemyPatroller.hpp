@@ -39,7 +39,7 @@ public:
     // State helpers
     bool atTargetPosition() const;
     void setAtTargetPosition(bool value);
-    void Patrolling();
+    void Patrolling(Grid& grid);
     void reset();
 
     float lookAroundTime = 0.0f;
@@ -49,7 +49,7 @@ public:
     bool warning = false;
     float maxRotationSpeed = 90.0f;
     float deltaTime;
-    void computePathToPlayer(Grid& grid, const Vector2f& targetPos);
+    void computePathToTarget(Grid& grid, const Vector2f& targetPos);
     void setWarning(bool alert, Vector2f targetpos);
 private:
     void moveTowardsTarget(float deltaTime);
@@ -72,26 +72,26 @@ private:
 class Action {
 public:
     virtual bool CanExecute(const EnemyPatroller& state) = 0;
-    virtual void Execute(EnemyPatroller& state) = 0;
+    virtual void Execute(EnemyPatroller& state, Grid& grid) = 0;
     virtual ~Action() {}
 };
 
 class ChasePlayer : public Action {
 public:
     bool CanExecute(const EnemyPatroller& state) override;
-    void Execute(EnemyPatroller& state) override;
+    void Execute(EnemyPatroller& state, Grid& grid) override;
 };
 
 class LookAround : public Action {
 public:
     bool CanExecute(const EnemyPatroller& state) override;
-    void Execute(EnemyPatroller& state) override;
+    void Execute(EnemyPatroller& state, Grid& grid) override;
 };
 
 class Patrol : public Action {
 public:
     bool CanExecute(const EnemyPatroller& state) override;
-    void Execute(EnemyPatroller& state) override;
+    void Execute(EnemyPatroller& state, Grid& grid) override;
 };
 
 class GOAPPlanner {
