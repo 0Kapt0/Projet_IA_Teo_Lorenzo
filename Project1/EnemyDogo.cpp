@@ -117,7 +117,6 @@ void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
     );
 
     if (!grid.isWalkable(end.x, end.y)) {
-        /*cout << "🚨 Destination bloquée, recalcul impossible !" << endl;*/
         return;
     }
 
@@ -158,7 +157,6 @@ void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
             pathToPlayer = queue<Vector2f>();
             grid.debugPath.clear();
 
-            /*cout << "🟡 Nouveau chemin : ";*/
             for (const auto& pos : path) {
                 Vector2f alignedPos(
                     (pos.x * CELL_SIZE) + (CELL_SIZE / 2),
@@ -167,9 +165,7 @@ void ChasingDogo::computePathToPlayer(Grid& grid, const Vector2f& playerPos) {
 
                 pathToPlayer.push(alignedPos);
                 grid.debugPath.push_back(pos);
-               /* cout << "(" << pos.x << "," << pos.y << ") ";*/
             }
-            /*cout << endl;*/
             return;
         }
 

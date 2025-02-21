@@ -16,15 +16,18 @@ int main() {
     Grid grid;
 
     EntityManager manager;
-    auto player = std::make_shared<Player>(200, 400);
+    auto player = std::make_shared<Player>(50, 50);
     manager.setPlayer(player);
 
-    manager.addEnemy(std::make_shared<EnemyPatroller>(100, 100, sf::Vector2f(400, 200), sf::Vector2f(400, 500), sf::Vector2f(300, 500)));
+    manager.addEnemy(std::make_shared<EnemyPatroller>(100, 100, sf::Vector2f(400, 200), sf::Vector2f(400, 500), sf::Vector2f(475, 500)));
+    manager.addEnemy(std::make_shared<EnemyPatroller>(1000, 100, sf::Vector2f(1400, 200), sf::Vector2f(1400, 500), sf::Vector2f(1175, 500)));
     manager.addCamera(std::make_shared<CameraAI>(250, 50, &manager));
+    manager.addCamera(std::make_shared<CameraAI>(50, 330, &manager));
+    manager.addCamera(std::make_shared<CameraAI>(1030, 50, &manager));
     manager.addDogo(std::make_shared<ChasingDogo>(650, 200));
 
     // Ajouter un allié au manager
-    auto ally1 = std::make_shared<AllyAI>(300, 400, grid);
+    auto ally1 = std::make_shared<AllyAI>(200, 400, grid);
     manager.addAlly(ally1);
 
     grid.loadFromFile("map.txt");

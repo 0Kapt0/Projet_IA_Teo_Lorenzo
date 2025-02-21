@@ -6,8 +6,12 @@ using namespace sf;
 using namespace std;
 
 AllyAI::AllyAI(float x, float y, Grid& grid) : targetPos(x, y), grid(grid) {
-    shape.setSize(Vector2f(30, 30));
-    shape.setFillColor(Color::Blue);
+    if (!allyTexture.loadFromFile("assets/texture/ALLY.png")) {
+        cerr << "Erreur chargement TEXTURE de la camera !" << endl;
+    }
+
+    shape.setTexture(&allyTexture);
+    shape.setSize(Vector2f(50, 50));
     shape.setOrigin(shape.getSize().x / 2, shape.getSize().y / 2);
     shape.setPosition(x, y);
 

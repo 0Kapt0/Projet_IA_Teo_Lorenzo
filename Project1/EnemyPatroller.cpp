@@ -24,10 +24,9 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     computePathToTarget(grid, targetpos);
     if (playerDetected || warning) {
         SPEED = 150;
-        computePathToTarget(grid, targetpos);
+        
     } else {
         SPEED = 100;
-        Patrolling(grid);
     }
 
     if (!pathToPlayer.empty()) {

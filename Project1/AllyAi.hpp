@@ -90,6 +90,7 @@ private:
     Vector2f targetPos;
     Grid& grid;
     RectangleShape shape;
+    Texture allyTexture;
 };
 
 #endif // ALLY_AI_HPP
