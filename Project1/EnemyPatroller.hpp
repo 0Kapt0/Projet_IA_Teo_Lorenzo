@@ -52,8 +52,9 @@ public:
     void computePathToTarget(Grid& grid, const Vector2f& targetPos);
     void setWarning(bool alert, Vector2f targetpos);
     void moveTowardsTarget(float deltaTime);
+    Sound sound;
 private:
-
+    
     std::queue<Vector2f> pathToPlayer;
     float speed = 160.0f;
     std::vector<Vector2i> debugPath;

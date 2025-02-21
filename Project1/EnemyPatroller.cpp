@@ -16,6 +16,10 @@ EnemyPatroller::EnemyPatroller(float x, float y, Vector2f point1, Vector2f point
     shape.setTexture(&enemyTexture);
     shape.setFillColor(Color::White);
     shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
+    SoundBuffer buffer;
+    buffer.loadFromFile("assets/apple-crunch-215258.mp3");
+    sound.setBuffer(buffer);
+
 }
 
 void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
@@ -63,6 +67,7 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
         expandedBounds.height += 20;
 
         if (shape.getGlobalBounds().intersects(expandedBounds)) {
+            sound.play();
             it = player.cookies.erase(it);
             setAtTargetPosition(true);
         }
