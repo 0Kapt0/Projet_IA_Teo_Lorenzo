@@ -23,8 +23,10 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     shape.setRotation(enemyAngle);
     computePathToTarget(grid, targetpos);
     if (playerDetected || warning) {
+        SPEED = 150;
         computePathToTarget(grid, targetpos);
     } else {
+        SPEED = 100;
         Patrolling(grid);
     }
 
@@ -56,16 +58,16 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
             }
         }
         FloatRect expandedBounds = (*it)->shape.getGlobalBounds();
-        expandedBounds.left -= 5; // Augmenter la largeur à gauche
-        expandedBounds.top -= 5; // Augmenter la hauteur en haut
-        expandedBounds.width += 10; // Étendre la largeur totale
-        expandedBounds.height += 10; // Étendre la hauteur totale
+        expandedBounds.left -= 15;
+        expandedBounds.top -= 15;
+        expandedBounds.width += 20;
+        expandedBounds.height += 20;
 
         if (shape.getGlobalBounds().intersects(expandedBounds)) {
-            it = player.cookies.erase(it); // Supprime le cookie et met à jour l'itérateur
+            it = player.cookies.erase(it);
         }
         else {
-            ++it; // Passe au cookie suivant
+            ++it;
         }
     }
 
@@ -90,7 +92,6 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
             break;
         }
     }
-    cout << atTarget;
 }
 
 void EnemyPatroller::moveTowardsTarget(float deltaTime) {
@@ -345,9 +346,6 @@ void EnemyPatroller::Patrolling(Grid& grid) {
             return;
         }
     }
-
-    cout << "Etape: " << etape << ", Ascending: " << ascending << endl;
-    cout << "Target: (" << targetpos.x << ", " << targetpos.y << ")" << endl;
 
     float distanceToTarget = sqrt(pow(shape.getPosition().x - targetpos.x, 2) +
         pow(shape.getPosition().y - targetpos.y, 2));
