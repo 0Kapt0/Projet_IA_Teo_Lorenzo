@@ -68,7 +68,7 @@ void AllyAI::updateA(float deltaTime, Grid& grid, Player& player, vector<Enemy*>
 
 void AllyAI::reset() {
     // Reset ally state (Example implementation)
-    cout << "Resetting AllyAI state.\n";
+    /*cout << "Resetting AllyAI state.\n";*/
 }
 
 bool AllyAI::atTargetPosition() const {
@@ -77,7 +77,7 @@ bool AllyAI::atTargetPosition() const {
 
 void AllyAI::setAtTargetPosition(bool atTarget) {
     // This function should probably store the value in a member variable
-    cout << "Setting atTargetPosition: " << atTarget << endl;
+    /*cout << "Setting atTargetPosition: " << atTarget << endl;*/
 }
 
 void AllyAI::rotateTowards(const sf::Vector2f& direction) {
@@ -88,20 +88,20 @@ void AllyAI::rotateTowards(const sf::Vector2f& direction) {
 }
 
 void AllyAI::alertAllies(Vector2f targetpos) {
-    cout << "Alerting allies!\n";
+    /*cout << "Alerting allies!\n";*/
 }
 
 
 void AllyAI::throwDiversion(Vector2f pos) {
-    cout << "Throwing diversion at (" << pos.x << ", " << pos.y << ")\n";
+    /*cout << "Throwing diversion at (" << pos.x << ", " << pos.y << ")\n";*/
 }
 
 void AllyAI::openHidingSpot(Vector2f pos) {
-    cout << "Opening hiding spot at (" << pos.x << ", " << pos.y << ")\n";
+  /*  cout << "Opening hiding spot at (" << pos.x << ", " << pos.y << ")\n";*/
 }
 
 void AllyAI::blockEnemyPath(Vector2f pos) {
-    cout << "Blocking enemy path at (" << pos.x << ", " << pos.y << ")\n";
+    /*cout << "Blocking enemy path at (" << pos.x << ", " << pos.y << ")\n";*/
 }
 
 bool ThrowDiversion::CanExecute(const AllyAI& state) {

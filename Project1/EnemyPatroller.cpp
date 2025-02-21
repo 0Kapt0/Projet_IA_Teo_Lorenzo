@@ -21,11 +21,12 @@ EnemyPatroller::EnemyPatroller(float x, float y, Vector2f point1, Vector2f point
 void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     this->deltaTime = deltaTime;
     shape.setRotation(enemyAngle);
-
+    computePathToTarget(grid, targetpos);
     if (playerDetected || warning) {
+        SPEED = 150;
         computePathToTarget(grid, targetpos);
-    }
-    else {
+    } else {
+        SPEED = 100;
         Patrolling(grid);
     }
 
@@ -46,6 +47,30 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
             break;
         }
     }
+    for (auto it = player.cookies.begin(); it != player.cookies.end(); ) {
+        for (size_t i = 1; i < cone.getVertexCount() - 1; ++i) {
+            if (isTriangleIntersectingRect(cone[0].position, cone[i].position, cone[i + 1].position, (*it)->shape.getGlobalBounds())) {
+                warning = true;
+                playerDetected = true;
+                targetpos = (*it)->shape.getPosition();
+                setAtTargetPosition(false);
+                break;
+            }
+        }
+        FloatRect expandedBounds = (*it)->shape.getGlobalBounds();
+        expandedBounds.left -= 15;
+        expandedBounds.top -= 15;
+        expandedBounds.width += 20;
+        expandedBounds.height += 20;
+
+        if (shape.getGlobalBounds().intersects(expandedBounds)) {
+            it = player.cookies.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
     GOAPPlanner planner;
     Goal currentGoal;
 
@@ -84,15 +109,19 @@ void EnemyPatroller::moveTowardsTarget(float deltaTime) {
 
     float moveStep = SPEED * deltaTime;
 
-    if (distance < moveStep) {
+    if (distance < moveStep || distance < 10.0f) {
         shape.setPosition(targetPos);
         pathToPlayer.pop();
+        if (pathToPlayer.empty()) {
+            setAtTargetPosition(true);
+        }
         return;
     }
 
     shape.move(direction * moveStep);
     float angle = atan2(direction.y, direction.x) * 180 / M_PI;
     shape.setRotation(angle);
+    rotateTowards(direction);
 }
 
 void EnemyPatroller::computePathToTarget(Grid& grid, const Vector2f& targetPos) {
@@ -106,7 +135,7 @@ void EnemyPatroller::computePathToTarget(Grid& grid, const Vector2f& targetPos) 
     );
 
     if (!grid.isWalkable(end.x, end.y)) {
-        cout << "🚨 Destination bloquée, recalcul impossible !" << endl;
+        //cout << "🚨 Destination bloquée, recalcul impossible !" << endl;
         return;
     }
 
@@ -171,7 +200,6 @@ void EnemyPatroller::computePathToTarget(Grid& grid, const Vector2f& targetPos) 
     }
 }
 
-
 void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
     if (alert) {
         warning = alert;
@@ -186,7 +214,6 @@ void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
         shape.setFillColor(Color::Red);
     }
 }
-
 
 bool EnemyPatroller::atTargetPosition() const {
     return atTarget;
@@ -288,27 +315,68 @@ void EnemyPatroller::rotateTowards(const Vector2f& direction) {
 }
 
 void EnemyPatroller::Patrolling(Grid& grid) {
-    Vector2f target;
-    switch (etape) {
-    case 1:
-        target = point1;
-        break;
-    case 2:
-        target = point2;
-        break;
-    case 3:
-        target = point3;
-        break;
-    default:
+    
+    if (ascending) {
+        switch (etape) {
+        case 1:
+            targetpos = point1;
+            break;
+        case 2:
+            targetpos = point2;
+            break;
+        case 3:
+            targetpos = point3;
+            break;
+        default:
+            return;
+        }
+    }
+    else {
+        switch (etape) {
+        case 1:
+            targetpos = point3;
+            break;
+        case 2:
+            targetpos = point2;
+            break;
+        case 3:
+            targetpos = point1;
+            break;
+        default:
+            return;
+        }
+    }
+
+    float distanceToTarget = sqrt(pow(shape.getPosition().x - targetpos.x, 2) +
+        pow(shape.getPosition().y - targetpos.y, 2));
+    if (distanceToTarget < 50.0f) { 
+        if (ascending) {
+            if (etape == 3) {
+                ascending = false;
+            }
+            else {
+                ++etape;
+            }
+        }
+        else {
+            if (etape == 1) {
+                ascending = true; 
+            }
+            else {
+                --etape;
+            }
+        }
+
+        setAtTargetPosition(true);
         return;
     }
 
-    computePathToTarget(grid, target);
+ 
+    computePathToTarget(grid, targetpos);
 }
 
 
 // ===================================================================================Actions=================================================================================
-
 
 bool ChasePlayer::CanExecute(const EnemyPatroller& state) {
     return state.warning && !state.atTargetPosition();
@@ -318,12 +386,11 @@ void ChasePlayer::Execute(EnemyPatroller& state, Grid& grid) {
     /*cout << "Chasing player\n";*/
     Vector2f direction = state.targetpos - state.shape.getPosition();
     float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
-    if (magnitude > 5.0f) {
-        direction /= magnitude;
-        state.rotateTowards(direction);
+    if (magnitude <= 35.0f) {
+        state.setAtTargetPosition(true);
     }
     else {
-        state.setAtTargetPosition(true);
+        state.rotateTowards(direction);
     }
 }
 

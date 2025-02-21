@@ -47,16 +47,17 @@ public:
     Vector2f targetpos;
     bool playerDetected = false;
     bool warning = false;
-    float maxRotationSpeed = 90.0f;
+    float maxRotationSpeed = 120.0f;
     float deltaTime;
     void computePathToTarget(Grid& grid, const Vector2f& targetPos);
     void setWarning(bool alert, Vector2f targetpos);
-private:
     void moveTowardsTarget(float deltaTime);
+private:
+
     std::queue<Vector2f> pathToPlayer;
     float speed = 160.0f;
     std::vector<Vector2i> debugPath;
-
+    bool ascending = true;
     Texture enemyTexture;
     int etape = 1;
     bool atTarget = false;

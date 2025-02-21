@@ -125,7 +125,7 @@ bool CameraAI::isPointInTriangle(Vector2f p, Vector2f a, Vector2f b, Vector2f c)
 void CameraAI::alertEnemies(Vector2f targetpos) {
     if (!entityManager) return;
 
-    cout << "Camera Alert! Enemies notified!\n";
+   /* cout << "Camera Alert! Enemies notified!\n";*/
     for (auto& enemy : entityManager->getEnemies()) {
         enemy->setWarning(true, (targetpos));
     }
