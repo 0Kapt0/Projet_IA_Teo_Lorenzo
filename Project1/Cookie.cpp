@@ -1,6 +1,6 @@
 #include"Cookie.hpp"
 
-Cookie::Cookie(float x, float y, Texture cookietexture) : Entity(x, y, Color::Yellow){
+Cookie::Cookie(float x, float y, Texture& cookietexture) : Entity(x, y, Color::Yellow){
 
 	shape.setTexture(&cookietexture);
 	shape.setPosition(x, y);

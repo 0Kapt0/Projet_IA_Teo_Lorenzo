@@ -5,8 +5,8 @@
 
 class Cookie : public Entity {
 public:
-    Texture cookietexture;
-    Cookie(float x, float y, Texture cookietexture);
+    
+    Cookie(float x, float y, Texture& cookietexture);
     void update(float deltaTime, Grid& grid) override;
 };
 
