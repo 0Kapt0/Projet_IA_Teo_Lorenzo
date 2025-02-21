@@ -48,18 +48,14 @@ Chaque ennemi et allié suit un ensemble de règles IA spécifiques :
 
 ## 4. Graphismes et Direction Artistique
 ### 4.1. Style visuel et animations
-Utilisation de sprites pour représenter les personnages et les ennemis, animés avec des sprite sheets.
+Utilisation de textures pour représenter les personnages et les ennemis, animés avec des sprite sheets.
 
 ### 4.2. Affichage des états IA
 Les ennemis changent de couleur ou d'apparence en fonction de leur état.
 
 ## 5. Sound Design
 ### 5.1. Ambiance sonore
-Ajout de sons d'alerte et d'effets sonores pour les interactions IA.
-
-### 5.2. Bruitages
-- Sons pour les déplacements et attaques des ennemis.
-- Effets sonores pour les alertes des caméras.
+Ajout de sons d'alerte et d'effets sonores pour les interactions IA. (en cour)
 
 ## 6. Gestion de Projet et Planning
 ### 6.1. Méthodologie de gestion
@@ -82,7 +78,5 @@ Nous avons implémenté avec succès plusieurs techniques IA avancées dans un e
 - Optimisation des performances IA.
 - Ajout d'un système d'apprentissage dynamique pour les ennemis.
 - Amélioration des interactions entre alliés et ennemis.
-
-### 7.3. Possibilités d'évolution du projet
-L'intégration d'autres algorithmes IA, comme les réseaux de neurones ou le machine learning, pourrait permettre une évolution plus poussée du projet.
+- Mise en fonction de l'allié qui est inutile pour le moment
 
