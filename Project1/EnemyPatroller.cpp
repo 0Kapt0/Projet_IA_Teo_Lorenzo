@@ -45,6 +45,30 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
             break;
         }
     }
+    for (auto it = player.cookies.begin(); it != player.cookies.end(); ) {
+        for (size_t i = 1; i < cone.getVertexCount() - 1; ++i) {
+            if (isTriangleIntersectingRect(cone[0].position, cone[i].position, cone[i + 1].position, (*it)->shape.getGlobalBounds())) {
+                warning = true;
+                playerDetected = true;
+                targetpos = (*it)->shape.getPosition();
+                setAtTargetPosition(false);
+                break;
+            }
+        }
+        FloatRect expandedBounds = (*it)->shape.getGlobalBounds();
+        expandedBounds.left -= 5; // Augmenter la largeur à gauche
+        expandedBounds.top -= 5; // Augmenter la hauteur en haut
+        expandedBounds.width += 10; // Étendre la largeur totale
+        expandedBounds.height += 10; // Étendre la hauteur totale
+
+        if (shape.getGlobalBounds().intersects(expandedBounds)) {
+            it = player.cookies.erase(it); // Supprime le cookie et met à jour l'itérateur
+        }
+        else {
+            ++it; // Passe au cookie suivant
+        }
+    }
+
     GOAPPlanner planner;
     Goal currentGoal;
 
@@ -84,7 +108,7 @@ void EnemyPatroller::moveTowardsTarget(float deltaTime) {
 
     float moveStep = SPEED * deltaTime;
 
-    if (distance < moveStep || distance < 1.0f) {
+    if (distance < moveStep || distance < 10.0f) {
         shape.setPosition(targetPos);
         pathToPlayer.pop();
         if (pathToPlayer.empty()) {
