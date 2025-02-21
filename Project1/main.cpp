@@ -24,7 +24,7 @@ int main() {
     manager.addDogo(std::make_shared<ChasingDogo>(650, 200));
 
     // Ajouter un allié au manager
-    auto ally1 = std::make_shared<AllyAI>(300, 400, &manager);
+    auto ally1 = std::make_shared<AllyAI>(300, 400, grid);
     manager.addAlly(ally1);
 
     grid.loadFromFile("map.txt");
@@ -44,11 +44,11 @@ int main() {
             window.close();
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        /*if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
             if (manager.getPlayer()) {
                 manager.alertAllies(manager.getPlayer()->shape.getPosition());
             }
-        }
+        }*/
 
         window.clear();
 

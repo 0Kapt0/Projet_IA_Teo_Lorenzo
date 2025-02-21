@@ -1,145 +1,141 @@
-#include "AllyAI.hpp"
+﻿#include "AllyAI.hpp"
 #include <cmath>
-#include <iostream>
+#include <queue>
 
 using namespace sf;
 using namespace std;
 
-AllyAI::AllyAI(float x, float y, EntityManager* manager)
-    : Entity(x, y, Color::Blue), entityManager(manager) {
-    targetpos = Vector2f(x, y);
-    lastKnownPosition = targetpos;
-    reset();
-    shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);
+AllyAI::AllyAI(float x, float y, Grid& grid) : targetPos(x, y), grid(grid) {
+    shape.setSize(Vector2f(30, 30));
+    shape.setFillColor(Color::Blue);
+    shape.setOrigin(shape.getSize().x / 2, shape.getSize().y / 2);
+    shape.setPosition(x, y);
+
+    // Création du Behavior Tree
+    auto root = make_unique<SelectorNode>();
+
+    auto sequence = make_unique<SequenceNode>();
+    sequence->addChild(make_unique<ConditionNode>([this]() {
+        return (shape.getPosition() != targetPos);
+        }));
+
+    sequence->addChild(make_unique<ActionNode>([this]() {
+        this->computePathToTarget(this->targetPos);
+        return NodeState::RUNNING;
+        }));
+
+    root->addChild(std::move(sequence));
+    root->addChild(make_unique<ActionNode>([]() {
+        return NodeState::SUCCESS;
+        }));
+
+    behaviorTree = std::move(root);
 }
 
-void AllyAI::update(float deltaTime, Grid& grid) {
-
+void AllyAI::update(float deltaTime) {
+    behaviorTree->execute();
+    moveTowardsTarget(deltaTime);
 }
 
-void AllyAI::updateA(float deltaTime, Grid& grid, Player& player, vector<Enemy*>& nearbyEnemies) {
-    this->deltaTime = deltaTime;
-    shape.setRotation(allyAngle);
+void AllyAI::computePathToTarget(const Vector2f& targetPos) {
+    Vector2i start(
+        static_cast<int>(shape.getPosition().x / CELL_SIZE),
+        static_cast<int>(shape.getPosition().y / CELL_SIZE)
+    );
+    Vector2i end(
+        static_cast<int>(targetPos.x / CELL_SIZE),
+        static_cast<int>(targetPos.y / CELL_SIZE)
+    );
 
-    float distanceToPlayer = sqrt(pow(player.shape.getPosition().x - shape.getPosition().x, 2) +
-        pow(player.shape.getPosition().y - shape.getPosition().y, 2));
-
-    // Rester proche du joueur
-    if (distanceToPlayer > 100.0f) {
-        targetpos = player.shape.getPosition();
-        setAtTargetPosition(false);
+    if (!grid.isWalkable(end.x, end.y)) {
+        return;
     }
 
-    GOAPPlannerAlly planner;
-    GoalA currentGoal  = GoalA::Patrolling;
+    struct Node {
+        Vector2i pos;
+        float cost;
+        float heuristic;
+        bool operator>(const Node& other) const {
+            return (cost + heuristic) > (other.cost + other.heuristic);
+        }
+    };
 
-    for (auto& enemy : nearbyEnemies) {
-        float distanceToEnemy = sqrt(pow(enemy->shape.getPosition().x - shape.getPosition().x, 2) +
-            pow(enemy->shape.getPosition().y - shape.getPosition().y, 2));
+    priority_queue<Node, vector<Node>, greater<Node>> openSet;
+    map<Vector2i, Vector2i, Vector2iComparator> cameFrom;
+    map<Vector2i, float, Vector2iComparator> costSoFar;
+    vector<Vector2i> path;
 
-        if (distanceToEnemy < 200.0f) {
-            currentGoal = GoalA::Distract;
+    openSet.push({ start, 0, static_cast<float>(abs(start.x - end.x) + abs(start.y - end.y)) });
+    cameFrom[start] = start;
+    costSoFar[start] = 0;
+
+    vector<Vector2i> directions = {
+        {0, -1}, {0, 1}, {-1, 0}, {1, 0},
+        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
+    };
+
+    while (!openSet.empty()) {
+        Node current = openSet.top();
+        openSet.pop();
+
+        if (current.pos == end) {
+            while (current.pos != start) {
+                path.push_back(current.pos);
+                current.pos = cameFrom[current.pos];
+            }
+            reverse(path.begin(), path.end());
+
+            pathToTarget = queue<Vector2f>();
+            for (const auto& pos : path) {
+                Vector2f alignedPos(
+                    (pos.x * CELL_SIZE) + (CELL_SIZE / 2),
+                    (pos.y * CELL_SIZE) + (CELL_SIZE / 2)
+                );
+                pathToTarget.push(alignedPos);
+            }
+            return;
+        }
+
+        for (const auto& dir : directions) {
+            Vector2i neighbor = current.pos + dir;
+
+            if (!grid.isWalkable(neighbor.x, neighbor.y)) continue;
+
+            float newCost = costSoFar[current.pos] + 1;
+            if (costSoFar.find(neighbor) == costSoFar.end() || newCost < costSoFar[neighbor]) {
+                costSoFar[neighbor] = newCost;
+                float priority = newCost + static_cast<float>(abs(neighbor.x - end.x) + abs(neighbor.y - end.y));
+                openSet.push({ neighbor, newCost, priority });
+                cameFrom[neighbor] = current.pos;
+            }
         }
     }
-
-    vector<ActionAlly*> actions = planner.Plan(*this, currentGoal);
-
-    for (ActionAlly* action : actions) {
-        if (action->CanExecute(*this)) {
-            action->Execute(*this);
-            break;
-        }
-    }
-}
-
-//void EnemyDogo::computePathToPlayerA() {
-//    if (!entityManager) return;
-//
-//    sf::Vector2i start((int)shape.getPosition().x / 32, (int)shape.getPosition().y / 32);
-//    sf::Vector2i end((int)lastKnownPosition.x / 32, (int)lastKnownPosition.y / 32);
-//
-//    std::vector<sf::Vector2i> path = astar_search(start, end, entityManager->getGrid());
-//
-//    pathToPlayer = std::queue<sf::Vector2f>();
-//    for (const auto& pos : path) {
-//        pathToPlayer.push(sf::Vector2f(pos.x * 32, pos.y * 32));
-//    }
-//}
-
-void AllyAI::reset() {
-    // Reset ally state (Example implementation)
-    /*cout << "Resetting AllyAI state.\n";*/
-}
-
-bool AllyAI::atTargetPosition() const {
-    return (shape.getPosition() == targetpos);
-}
-
-void AllyAI::setAtTargetPosition(bool atTarget) {
-    // This function should probably store the value in a member variable
-    /*cout << "Setting atTargetPosition: " << atTarget << endl;*/
-}
-
-void AllyAI::rotateTowards(const sf::Vector2f& direction) {
-    float dx = direction.x - shape.getPosition().x;
-    float dy = direction.y - shape.getPosition().y;
-    float angle = atan2(dy, dx) * 180 / 3.14159;
-    shape.setRotation(angle);
-}
-
-void AllyAI::alertAllies(Vector2f targetpos) {
-    /*cout << "Alerting allies!\n";*/
 }
 
 
-void AllyAI::throwDiversion(Vector2f pos) {
-    /*cout << "Throwing diversion at (" << pos.x << ", " << pos.y << ")\n";*/
+void AllyAI::alert(Vector2f newTarget) {
+    std::cout << "AllyAI alerted to position: (" << newTarget.x << ", " << newTarget.y << ")\n";
+    targetPos = newTarget;
 }
 
-void AllyAI::openHidingSpot(Vector2f pos) {
-  /*  cout << "Opening hiding spot at (" << pos.x << ", " << pos.y << ")\n";*/
-}
+void AllyAI::moveTowardsTarget(float deltaTime) {
+    if (pathToTarget.empty()) return;
 
-void AllyAI::blockEnemyPath(Vector2f pos) {
-    /*cout << "Blocking enemy path at (" << pos.x << ", " << pos.y << ")\n";*/
-}
+    Vector2f currentPos = shape.getPosition();
+    Vector2f target = pathToTarget.front();
 
-bool ThrowDiversion::CanExecute(const AllyAI& state) {
-    return true;
-}
+    Vector2f direction = target - currentPos;
+    float distance = sqrt(direction.x * direction.x + direction.y * direction.y);
 
-void ThrowDiversion::Execute(AllyAI& state) {
-    state.throwDiversion(state.shape.getPosition() + Vector2f(50, 50));
-}
-
-bool OpenHidingSpot::CanExecute(const AllyAI& state) {
-    return true;
-}
-
-void OpenHidingSpot::Execute(AllyAI& state) {
-    state.openHidingSpot(state.shape.getPosition());
-}
-
-bool BlockEnemyPath::CanExecute(const AllyAI& state) {
-    return true;
-}
-
-void BlockEnemyPath::Execute(AllyAI& state) {
-    state.blockEnemyPath(state.shape.getPosition());
-}
-
-vector<ActionAlly*> GOAPPlannerAlly::Plan(const AllyAI& initialState, GoalA Goal) {
-    vector<ActionAlly*> plan;
-
-    if (Goal == GoalA::Distract) {
-        plan.push_back(new ThrowDiversion());
-    }
-    else if (Goal == GoalA::Protect) {
-        plan.push_back(new OpenHidingSpot());
-    }
-    else if (Goal == GoalA::Block) {
-        plan.push_back(new BlockEnemyPath());
+    if (distance < 5.0f) {
+        pathToTarget.pop();
+        return;
     }
 
-    return plan;
+    direction /= distance;
+    shape.move(direction * 100.0f * deltaTime);
+}
+
+void AllyAI::draw(RenderWindow& window) {
+    window.draw(shape);
 }

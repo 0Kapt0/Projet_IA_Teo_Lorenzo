@@ -1,77 +1,95 @@
-#ifndef ALLY_AI_HPP
+﻿#ifndef ALLY_AI_HPP
 #define ALLY_AI_HPP
 
-#include "Entity.hpp"
-#include "Player.hpp"
 #include "Grid.hpp"
-#include "EntityManager.hpp"
 #include <vector>
+#include <memory>
+#include <queue>
+#include <functional>
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include "EnemyPatroller.hpp"
+#include <map>
 
-class EntityManager;
+using namespace sf;
 
-enum class GoalA {
-    Patrolling,
-    Distract,
-    Protect,
-    Block
+//États possibles des nœuds du Behavior Tree
+enum class NodeState { SUCCESS, FAILURE, RUNNING };
+
+//Classes de Behavior Tree
+class BTNode {
+public:
+    virtual ~BTNode() = default;
+    virtual NodeState execute() = 0;
 };
 
-class AllyAI : public Entity {
+class SequenceNode : public BTNode {
+private:
+    std::vector<std::unique_ptr<BTNode>> children;
 public:
-    AllyAI(float x, float y, EntityManager* manager);
-    void update(float deltaTime, Grid& grid) override;
-    void updateA(float deltaTime, Grid& grid, Player& player, std::vector<Enemy*>& nearbyEnemies);
-    void alertAllies(Vector2f targetpos);
-    void reset();
-    bool atTargetPosition() const;
-    void setAtTargetPosition(bool value);
-    void rotateTowards(const sf::Vector2f& direction);
-    void throwDiversion(Vector2f pos);
-    void openHidingSpot(Vector2f pos);
-    void blockEnemyPath(Vector2f pos);
-    void computePathToPlayerA();
-
-protected:
-    float deltaTime;
-    float allyAngle;
-    float maxRotationSpeed = 90.0f;
-    EntityManager* entityManager;
-
-public:
-    sf::Vector2f targetpos;
-    sf::Vector2f lastKnownPosition;
-    bool playerDetected;
-    bool atTarget;
+    void addChild(std::unique_ptr<BTNode> child) { children.push_back(std::move(child)); }
+    NodeState execute() override {
+        for (auto& child : children) {
+            if (child->execute() == NodeState::FAILURE) {
+                return NodeState::FAILURE;
+            }
+        }
+        return NodeState::SUCCESS;
+    }
 };
 
-class ActionAlly {
+class SelectorNode : public BTNode {
+private:
+    std::vector<std::unique_ptr<BTNode>> children;
 public:
-    virtual bool CanExecute(const AllyAI& state) = 0;
-    virtual void Execute(AllyAI& state) = 0;
-    virtual ~ActionAlly() {}
+    void addChild(std::unique_ptr<BTNode> child) { children.push_back(std::move(child)); }
+    NodeState execute() override {
+        for (auto& child : children) {
+            if (child->execute() == NodeState::SUCCESS) {
+                return NodeState::SUCCESS;
+            }
+        }
+        return NodeState::FAILURE;
+    }
 };
 
-class ThrowDiversion : public ActionAlly {
+class ConditionNode : public BTNode {
+private:
+    std::function<bool()> condition;
 public:
-    bool CanExecute(const AllyAI& state) override;
-    void Execute(AllyAI& state) override;
+    ConditionNode(std::function<bool()> func) : condition(func) {}
+    NodeState execute() override {
+        return condition() ? NodeState::SUCCESS : NodeState::FAILURE;
+    }
 };
 
-class OpenHidingSpot : public ActionAlly {
+class ActionNode : public BTNode {
+private:
+    std::function<NodeState()> action;
 public:
-    bool CanExecute(const AllyAI& state) override;
-    void Execute(AllyAI& state) override;
+    ActionNode(std::function<NodeState()> func) : action(func) {}
+    NodeState execute() override {
+        return action();
+    }
 };
 
-class BlockEnemyPath : public ActionAlly {
+class AllyAI {
 public:
-    bool CanExecute(const AllyAI& state) override;
-    void Execute(AllyAI& state) override;
-};
+    AllyAI(float x, float y, Grid& grid);
+    void update(float deltaTime);
+    void computePathToTarget(const Vector2f& targetPos);
+    void alert(Vector2f newTarget);
+    void draw(sf::RenderWindow& window);
 
-class GOAPPlannerAlly {
-public:
-    std::vector<ActionAlly*> Plan(const AllyAI& initialState, GoalA Goal);
+    const RectangleShape& getShape() const { return shape; }
+
+private:
+    void moveTowardsTarget(float deltaTime);
+    std::unique_ptr<BTNode> behaviorTree;
+    std::queue<Vector2f> pathToTarget;
+    Vector2f targetPos;
+    Grid& grid;
+    RectangleShape shape;
 };
 
 #endif // ALLY_AI_HPP

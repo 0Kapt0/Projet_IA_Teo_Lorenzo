@@ -9,7 +9,7 @@
 #include "Grid.hpp"
 #include "CameraAI.hpp"
 #include "EnemyDogo.hpp"
-#include "AllyAi.hpp"
+#include "AllyAI.hpp"
 
 class CameraAI;
 class ChasingDogo;
@@ -32,7 +32,7 @@ public:
     void addAlly(std::shared_ptr<AllyAI> ally);
     std::vector<std::shared_ptr<AllyAI>>& getAllies();
 
-    void alertAllies(sf::Vector2f targetpos);
+    /*void alertAllies(Vector2f targetpos);*/
     void update(float deltaTime, Grid& grid);
     void draw(sf::RenderWindow& window, Grid& grid);
 

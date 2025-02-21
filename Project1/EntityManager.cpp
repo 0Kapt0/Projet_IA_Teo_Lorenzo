@@ -30,7 +30,6 @@ std::vector<std::shared_ptr<CameraAI>>& EntityManager::getCameras() {
     return cameras;
 }
 
-// Ajout de la gestion des alliés
 void EntityManager::addAlly(std::shared_ptr<AllyAI> ally) {
     allies.push_back(ally);
 }
@@ -39,13 +38,13 @@ std::vector<std::shared_ptr<AllyAI>>& EntityManager::getAllies() {
     return allies;
 }
 
-void EntityManager::alertAllies(sf::Vector2f targetpos) {
-    std::cout << "Alerting all allies at position: (" << targetpos.x << ", " << targetpos.y << ")\n";
-
-    for (auto& ally : allies) {
-        ally->alertAllies(targetpos);
-    }
-}
+//void EntityManager::alertAllies(sf::Vector2f targetpos) {
+//    std::cout << "Alerting all allies at position: (" << targetpos.x << ", " << targetpos.y << ")\n";
+//
+//    for (auto& ally : allies) {
+//        ally->alertAllies(targetpos);
+//    }
+//}
 
 void EntityManager::update(float deltaTime, Grid& grid) {
 
@@ -78,7 +77,7 @@ void EntityManager::update(float deltaTime, Grid& grid) {
     }
 
     for (auto& ally : allies) {
-        ally->updateA(deltaTime, grid, *player, enemyPointers);
+        ally->update(deltaTime);
     }
 }
 
@@ -99,7 +98,7 @@ void EntityManager::draw(sf::RenderWindow& window, Grid& grid) {
         camera->draw(window, grid);
     }
     for (auto& ally : allies) {
-        window.draw(ally->shape);
+        window.draw(ally->getShape());
     }
 }
 
