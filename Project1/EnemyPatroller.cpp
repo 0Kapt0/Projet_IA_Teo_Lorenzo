@@ -96,6 +96,7 @@ void EnemyPatroller::moveTowardsTarget(float deltaTime) {
     shape.move(direction * moveStep);
     float angle = atan2(direction.y, direction.x) * 180 / M_PI;
     shape.setRotation(angle);
+    rotateTowards(direction);
 }
 
 void EnemyPatroller::computePathToTarget(Grid& grid, const Vector2f& targetPos) {
@@ -289,19 +290,17 @@ void EnemyPatroller::rotateTowards(const Vector2f& direction) {
 }
 
 void EnemyPatroller::Patrolling(Grid& grid) {
-    Vector2f target;
-
-    // Déterminer la cible actuelle en fonction de l'étape et de la direction
+    
     if (ascending) {
         switch (etape) {
         case 1:
-            target = point1;
+            targetpos = point1;
             break;
         case 2:
-            target = point2;
+            targetpos = point2;
             break;
         case 3:
-            target = point3;
+            targetpos = point3;
             break;
         default:
             return;
@@ -310,13 +309,13 @@ void EnemyPatroller::Patrolling(Grid& grid) {
     else {
         switch (etape) {
         case 1:
-            target = point3;
+            targetpos = point3;
             break;
         case 2:
-            target = point2;
+            targetpos = point2;
             break;
         case 3:
-            target = point1;
+            targetpos = point1;
             break;
         default:
             return;
@@ -324,16 +323,14 @@ void EnemyPatroller::Patrolling(Grid& grid) {
     }
 
     cout << "Etape: " << etape << ", Ascending: " << ascending << endl;
-    cout << "Target: (" << target.x << ", " << target.y << ")" << endl;
+    cout << "Target: (" << targetpos.x << ", " << targetpos.y << ")" << endl;
 
-    // Vérifiez si l'ennemi est proche de la cible actuelle
-    float distanceToTarget = sqrt(pow(shape.getPosition().x - target.x, 2) +
-        pow(shape.getPosition().y - target.y, 2));
-    if (distanceToTarget < 50.0f) { // Seuil ajusté
-        // Passer à l'étape suivante
+    float distanceToTarget = sqrt(pow(shape.getPosition().x - targetpos.x, 2) +
+        pow(shape.getPosition().y - targetpos.y, 2));
+    if (distanceToTarget < 50.0f) { 
         if (ascending) {
             if (etape == 3) {
-                ascending = false; // Inverser la direction lorsqu'on atteint 3
+                ascending = false;
             }
             else {
                 ++etape;
@@ -341,7 +338,7 @@ void EnemyPatroller::Patrolling(Grid& grid) {
         }
         else {
             if (etape == 1) {
-                ascending = true; // Inverser la direction lorsqu'on atteint 1
+                ascending = true; 
             }
             else {
                 --etape;
@@ -352,8 +349,8 @@ void EnemyPatroller::Patrolling(Grid& grid) {
         return;
     }
 
-    // Continue de calculer le chemin vers la cible actuelle
-    computePathToTarget(grid, target);
+ 
+    computePathToTarget(grid, targetpos);
 }
 
 
@@ -367,7 +364,7 @@ void ChasePlayer::Execute(EnemyPatroller& state, Grid& grid) {
     /*cout << "Chasing player\n";*/
     Vector2f direction = state.targetpos - state.shape.getPosition();
     float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
-    if (magnitude <= 30.0f) {
+    if (magnitude <= 35.0f) {
         state.setAtTargetPosition(true);
     }
     else {

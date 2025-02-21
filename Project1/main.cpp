@@ -19,7 +19,7 @@ int main() {
     auto player = std::make_shared<Player>(200, 400);
     manager.setPlayer(player);
 
-    manager.addEnemy(std::make_shared<EnemyPatroller>(100, 100, sf::Vector2f(400, 200), sf::Vector2f(400, 300), sf::Vector2f(300, 300)));
+    manager.addEnemy(std::make_shared<EnemyPatroller>(100, 100, sf::Vector2f(400, 200), sf::Vector2f(400, 500), sf::Vector2f(300, 500)));
     manager.addCamera(std::make_shared<CameraAI>(250, 50, &manager));
     manager.addDogo(std::make_shared<ChasingDogo>(650, 200));
 

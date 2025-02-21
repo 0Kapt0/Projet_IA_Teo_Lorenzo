@@ -47,7 +47,7 @@ public:
     Vector2f targetpos;
     bool playerDetected = false;
     bool warning = false;
-    float maxRotationSpeed = 90.0f;
+    float maxRotationSpeed = 120.0f;
     float deltaTime;
     void computePathToTarget(Grid& grid, const Vector2f& targetPos);
     void setWarning(bool alert, Vector2f targetpos);
