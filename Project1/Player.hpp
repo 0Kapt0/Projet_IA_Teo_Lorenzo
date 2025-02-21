@@ -6,6 +6,7 @@
 
 class Player : public Entity {
 public:
+
     float SPEED = 200.0f;
     Player(float x, float y);
     void update(float deltaTime, Grid& grid) override;
@@ -15,6 +16,7 @@ public:
     Vector2f getPosition() const { return shape.getPosition(); }
     RectangleShape getShape() const { return shape; }
 private:
+    Texture cookietexture;
     bool isRunning = false;
 };
 

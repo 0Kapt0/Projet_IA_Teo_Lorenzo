@@ -4,6 +4,9 @@
 #include <SFML/Window/Keyboard.hpp>
 
 Player::Player(float x, float y) : Entity(x, y, Color::Blue) {
+    if (!cookietexture.loadFromFile("assets/texture/Cookie.png")) {
+        cerr << "Erreur chargement cookie !" << endl;
+    }
     /*shape.setOrigin((shape.getSize().x / 2), shape.getSize().y / 2);*/
 }
 
@@ -25,7 +28,7 @@ void Player::update(float deltaTime, Grid& grid) {
     static bool spacePreviouslyPressed = false;
     if (Keyboard::isKeyPressed(Keyboard::Space)) {
         if (!spacePreviouslyPressed) {
-            cookies.push_back(make_unique<Cookie>(shape.getPosition().x, shape.getPosition().y));
+            cookies.push_back(make_unique<Cookie>(shape.getPosition().x, shape.getPosition().y, cookietexture));
             spacePreviouslyPressed = true;
         }
     }
