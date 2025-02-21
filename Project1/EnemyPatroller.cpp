@@ -57,13 +57,14 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
             }
         }
         FloatRect expandedBounds = (*it)->shape.getGlobalBounds();
-        expandedBounds.left -= 15;
-        expandedBounds.top -= 15;
+        expandedBounds.left -= 20;
+        expandedBounds.top -= 20;
         expandedBounds.width += 20;
         expandedBounds.height += 20;
 
         if (shape.getGlobalBounds().intersects(expandedBounds)) {
             it = player.cookies.erase(it);
+            setAtTargetPosition(true);
         }
         else {
             ++it;
