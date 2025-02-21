@@ -21,7 +21,7 @@ EnemyPatroller::EnemyPatroller(float x, float y, Vector2f point1, Vector2f point
 void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
     this->deltaTime = deltaTime;
     shape.setRotation(enemyAngle);
-
+    computePathToTarget(grid, targetpos);
     if (playerDetected || warning) {
         computePathToTarget(grid, targetpos);
     } else {
@@ -66,6 +66,7 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
             break;
         }
     }
+    cout << atTarget;
 }
 
 void EnemyPatroller::moveTowardsTarget(float deltaTime) {
@@ -83,9 +84,12 @@ void EnemyPatroller::moveTowardsTarget(float deltaTime) {
 
     float moveStep = SPEED * deltaTime;
 
-    if (distance < moveStep) {
+    if (distance < moveStep || distance < 1.0f) {
         shape.setPosition(targetPos);
         pathToPlayer.pop();
+        if (pathToPlayer.empty()) {
+            setAtTargetPosition(true);
+        }
         return;
     }
 
@@ -105,7 +109,7 @@ void EnemyPatroller::computePathToTarget(Grid& grid, const Vector2f& targetPos) 
     );
 
     if (!grid.isWalkable(end.x, end.y)) {
-        cout << "🚨 Destination bloquée, recalcul impossible !" << endl;
+        //cout << "🚨 Destination bloquée, recalcul impossible !" << endl;
         return;
     }
 
@@ -170,7 +174,6 @@ void EnemyPatroller::computePathToTarget(Grid& grid, const Vector2f& targetPos) 
     }
 }
 
-
 void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
     if (alert) {
         warning = alert;
@@ -185,7 +188,6 @@ void EnemyPatroller::setWarning(bool alert, Vector2f newtargetpos) {
         shape.setFillColor(Color::Red);
     }
 }
-
 
 bool EnemyPatroller::atTargetPosition() const {
     return atTarget;
@@ -288,26 +290,74 @@ void EnemyPatroller::rotateTowards(const Vector2f& direction) {
 
 void EnemyPatroller::Patrolling(Grid& grid) {
     Vector2f target;
-    switch (etape) {
-    case 1:
-        target = point1;
-        break;
-    case 2:
-        target = point2;
-        break;
-    case 3:
-        target = point3;
-        break;
-    default:
+
+    // Déterminer la cible actuelle en fonction de l'étape et de la direction
+    if (ascending) {
+        switch (etape) {
+        case 1:
+            target = point1;
+            break;
+        case 2:
+            target = point2;
+            break;
+        case 3:
+            target = point3;
+            break;
+        default:
+            return;
+        }
+    }
+    else {
+        switch (etape) {
+        case 1:
+            target = point3;
+            break;
+        case 2:
+            target = point2;
+            break;
+        case 3:
+            target = point1;
+            break;
+        default:
+            return;
+        }
+    }
+
+    cout << "Etape: " << etape << ", Ascending: " << ascending << endl;
+    cout << "Target: (" << target.x << ", " << target.y << ")" << endl;
+
+    // Vérifiez si l'ennemi est proche de la cible actuelle
+    float distanceToTarget = sqrt(pow(shape.getPosition().x - target.x, 2) +
+        pow(shape.getPosition().y - target.y, 2));
+    if (distanceToTarget < 50.0f) { // Seuil ajusté
+        // Passer à l'étape suivante
+        if (ascending) {
+            if (etape == 3) {
+                ascending = false; // Inverser la direction lorsqu'on atteint 3
+            }
+            else {
+                ++etape;
+            }
+        }
+        else {
+            if (etape == 1) {
+                ascending = true; // Inverser la direction lorsqu'on atteint 1
+            }
+            else {
+                --etape;
+            }
+        }
+
+        setAtTargetPosition(true);
         return;
     }
 
+    // Continue de calculer le chemin vers la cible actuelle
     computePathToTarget(grid, target);
 }
 
 
 // ===================================================================================Actions=================================================================================
-
 
 bool ChasePlayer::CanExecute(const EnemyPatroller& state) {
     return state.warning && !state.atTargetPosition();
@@ -317,12 +367,11 @@ void ChasePlayer::Execute(EnemyPatroller& state, Grid& grid) {
     /*cout << "Chasing player\n";*/
     Vector2f direction = state.targetpos - state.shape.getPosition();
     float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
-    if (magnitude > 5.0f) {
-        direction /= magnitude;
-        state.rotateTowards(direction);
+    if (magnitude <= 30.0f) {
+        state.setAtTargetPosition(true);
     }
     else {
-        state.setAtTargetPosition(true);
+        state.rotateTowards(direction);
     }
 }
 
