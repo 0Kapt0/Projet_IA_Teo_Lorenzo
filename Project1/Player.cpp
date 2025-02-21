@@ -22,9 +22,15 @@ void Player::update(float deltaTime, Grid& grid) {
         SPEED = 200.f;
         isRunning = false;
     }
+    static bool spacePreviouslyPressed = false;
     if (Keyboard::isKeyPressed(Keyboard::Space)) {
-
-        cookies.push_back(make_unique<Cookie>(shape.getPosition().x, shape.getPosition().y));
+        if (!spacePreviouslyPressed) {
+            cookies.push_back(make_unique<Cookie>(shape.getPosition().x, shape.getPosition().y));
+            spacePreviouslyPressed = true;
+        }
+    }
+    else {
+        spacePreviouslyPressed = false;
     }
     Vector2f newPosition = shape.getPosition() + movement;
     FloatRect newBounds(newPosition, shape.getSize());
