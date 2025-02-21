@@ -24,7 +24,8 @@ void EnemyPatroller::update(float deltaTime, Grid& grid, Player& player) {
 
     if (playerDetected || warning) {
         computePathToTarget(grid, targetpos);
-    } else {
+    }
+    else {
         Patrolling(grid);
     }
 
@@ -332,8 +333,8 @@ bool LookAround::CanExecute(const EnemyPatroller& state) {
 }
 
 void LookAround::Execute(EnemyPatroller& state, Grid& grid) {
-   /* cout << "Looking around\n"*/;
-    
+    /* cout << "Looking around\n"*/;
+
     if (state.playerDetected) {
         /*cout << "Player detected during LookAround, switching to Chase\n"*/;
         state.lookAroundTime = 0.0f;
@@ -341,7 +342,7 @@ void LookAround::Execute(EnemyPatroller& state, Grid& grid) {
         state.setAtTargetPosition(false);
         return;
     }
-    
+
     state.lookAroundTime += state.deltaTime;
     if (state.lookAroundTime <= 1.5f) {
         state.enemyAngle += 100 * state.deltaTime * state.rotatedir;
@@ -353,7 +354,7 @@ void LookAround::Execute(EnemyPatroller& state, Grid& grid) {
         state.rotatedir = rand() % 1;
         if (state.rotatedir == 0)state.rotatedir = -1;
     }
-    
+
 
 }
 
