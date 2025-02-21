@@ -1,45 +1,88 @@
-# Projet_IA_Teo_Lorenzo - Jeu en C++ avec SFML
+# Projet IA - Implémentation d'IA pour un jeu en C++ avec SFML
 
-## Description
-Ce projet consiste en l'implémentation d'une intelligence artificielle (IA) avancée pour un jeu développé en C++ avec SFML. L'objectif est d'améliorer le comportement des ennemis grâce à des algorithmes tels que le pathfinding A*, les machines à états finis (FSM), les arbres de comportement (Behaviour Trees) et le Goal-Oriented Action Planning (GOAP).
+## 1. Introduction
+### 1.1. Présentation du projet
+Projet réalisé en 8 jours dans le cadre de notre enseignement.
 
-## Fonctionnalités principales
-- **Pathfinding A*** : Les ennemis utilisent l'algorithme A* pour se déplacer vers leur cible de manière efficace.
-- **Machines à états finis (FSM)** : Gestion des comportements basiques des ennemis.
-- **Arbres de comportement (Behaviour Trees)** : Prise de décisions complexe pour certains personnages.
-- **GOAP (Goal-Oriented Action Planning)** : Système avancé permettant aux ennemis de s'adapter dynamiquement à la situation.
-- **Gestion des alliés** : Ajout d'un personnage allié pouvant répondre à certaines actions.
-- **Caméra de surveillance** : Détection du joueur et alerte des ennemis.
-- **Mécaniques de jeu** : Mouvement du joueur, sprint, largage d'objets (cookies) pour détourner l'attention des ennemis.
+### 1.2. Objectifs et ambitions
+Les objectifs étaient de développer un système d'intelligence artificielle avancé pour un jeu en C++ avec SFML, en intégrant des techniques comme le pathfinding A*, les machines à états finis (FSM), les arbres de comportement (Behaviour Trees) et le Goal-Oriented Action Planning (GOAP).
 
-## Technologies utilisées
-- **Langage** : C++ (C++17 ou supérieur recommandé)
-- **Bibliothèque graphique** : SFML (Simple and Fast Multimedia Library)
-- **Outils recommandés** : GitHub pour le versioning, Valgrind pour le débogage
+### 1.3. Public cible
+Tout public
 
-## Installation et exécution
-### Prérequis
-1. Installer **Visual Studio Community 2022** ou un IDE compatible avec C++
-2. Installer la bibliothèque **SFML**
+### 1.4. Plateformes et technologies utilisées
+* Microsoft Visual Studio
+* C++17
+* SFML (Simple and Fast Multimedia Library)
 
-## Comment jouer ?
-- **Déplacements** : ZQSD (ou flèches directionnelles)
-- **Sprint** : Maintenir **Shift** enfoncé
-- **Lancer un cookie** : Appuyer sur **Espace** (peut attirer les ennemis)
-- **Éviter la caméra** : Ne pas entrer dans son champ de vision sous peine d'alerter les ennemis
-- **Échapper aux ennemis** : Se cacher ou les semer grâce à des obstacles
+## 2. Concept du projet
+### 2.1. Synopsis et objectifs
+L'objectif est d'implémenter différentes techniques d'IA pour améliorer le comportement des entités ennemies et alliées dans le jeu.
 
-## Roadmap et Améliorations futures
-- ✅ Implémentation des IA de base (Patrouilleur, Chien, Caméra)
-- ✅ Ajout du pathfinding A*
-- ✅ Intégration des Behaviour Trees et GOAP
-- 🔜 Amélioration du comportement des alliés
-- 🔜 Ajout de niveaux supplémentaires
+### 2.2. Approches IA utilisées
+- **Pathfinding A*** : Déplacement intelligent des ennemis.
+- **FSM (Finite State Machine)** : Comportements basiques des ennemis.
+- **Behaviour Trees** : Système de prise de décision avancé.
+- **GOAP (Goal-Oriented Action Planning)** : Gestion dynamique des actions.
 
-## Auteurs
-- **[Votre Nom]** - Développeur principal
-- Projet réalisé dans le cadre de l'enseignement à Gaming Campus
+### 2.3. Mécaniques IA principales
+- Déplacements optimisés et poursuite du joueur.
+- Détection et alerte entre ennemis.
+- Réactions des alliés face aux menaces.
 
-## Licence
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+## 3. Implémentation technique
+### 3.1. Systèmes IA intégrés
+Chaque ennemi et allié suit un ensemble de règles IA spécifiques :
+- **Patrouilleur** : Suit un chemin prédéfini et réagit aux intrusions.
+- **Chien de garde** : Utilise A* pour poursuivre le joueur s'il est repéré.
+- **Caméra de surveillance** : Détecte le joueur et alerte les autres ennemis.
+- **Allié** : Suit un arbre de comportement pour assister le joueur.
+
+### 3.2. Gestion des entités et interactions
+- Un **Entity Manager** centralise la mise à jour et le rendu des entités IA.
+- Les entités ennemies et alliées communiquent entre elles pour adapter leur comportement.
+
+### 3.3. Interface utilisateur et debug
+- Indicateurs visuels pour la détection des ennemis.
+- Mode debug pour afficher les chemins générés par A*.
+
+## 4. Graphismes et Direction Artistique
+### 4.1. Style visuel et animations
+Utilisation de sprites pour représenter les personnages et les ennemis, animés avec des sprite sheets.
+
+### 4.2. Affichage des états IA
+Les ennemis changent de couleur ou d'apparence en fonction de leur état.
+
+## 5. Sound Design
+### 5.1. Ambiance sonore
+Ajout de sons d'alerte et d'effets sonores pour les interactions IA.
+
+### 5.2. Bruitages
+- Sons pour les déplacements et attaques des ennemis.
+- Effets sonores pour les alertes des caméras.
+
+## 6. Gestion de Projet et Planning
+### 6.1. Méthodologie de gestion
+Travail collaboratif avec une répartition des tâches par fonctionnalités IA.
+
+### 6.2. Répartition des tâches et rôles
+- **Pathfinding A*** : Développement du système de navigation.
+- **FSM et Behaviour Trees** : Conception des comportements ennemis.
+- **GOAP** : Implémentation des décisions stratégiques.
+- **Debug et optimisations** : Amélioration des performances IA.
+
+### 6.3. Planning et échéances
+Projet réalisé en une semaine avec un objectif de prototype fonctionnel.
+
+## 7. Conclusion et Perspectives
+### 7.1. Résumé des résultats obtenus
+Nous avons implémenté avec succès plusieurs techniques IA avancées dans un environnement de jeu.
+
+### 7.2. Améliorations futures et mises à jour
+- Optimisation des performances IA.
+- Ajout d'un système d'apprentissage dynamique pour les ennemis.
+- Amélioration des interactions entre alliés et ennemis.
+
+### 7.3. Possibilités d'évolution du projet
+L'intégration d'autres algorithmes IA, comme les réseaux de neurones ou le machine learning, pourrait permettre une évolution plus poussée du projet.
 
